@@ -32,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# guard against credentials placed in a file Next.js does not load
+env.local
+# ...but keep the placeholder file so contributors know what to configure
+!.env.example
 
 # vercel
 .vercel
