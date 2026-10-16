@@ -4,6 +4,7 @@ import {
   SURVEY_PUBLISHED,
   SURVEY_PROFILE_FIELDS,
   SURVEY_SCHEMA_VERSION,
+  getProfileFieldOptions,
   surveyQuestions,
   type SurveyAnswerValue,
 } from "@/data/survey-questions";
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
     if (field.type === "select") {
       if (
         typeof raw !== "string" ||
-        !field.options?.some((option) => option.value === raw)
+        !getProfileFieldOptions(field).some((option) => option.value === raw)
       ) {
         profileFieldErrors[field.id] = "Please choose one of the listed options.";
         continue;

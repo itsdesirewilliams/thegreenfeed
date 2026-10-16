@@ -1,8 +1,9 @@
-import type {
-  SurveyAnswers,
-  SurveyAnswerValue,
-  SurveyProfileField,
-  SurveyQuestion,
+import {
+  getProfileFieldOptions,
+  type SurveyAnswers,
+  type SurveyAnswerValue,
+  type SurveyProfileField,
+  type SurveyQuestion,
 } from "@/data/survey-questions";
 
 export type SurveyFieldErrors = Record<string, string>;
@@ -70,7 +71,7 @@ export function validateSurveyProfile(
     if (field.type === "select" && !isEmptyAnswer(value)) {
       if (
         typeof value !== "string" ||
-        !field.options?.some((option) => option.value === value)
+        !getProfileFieldOptions(field).some((option) => option.value === value)
       ) {
         errors[field.id] = "Please choose one of the listed options.";
       }

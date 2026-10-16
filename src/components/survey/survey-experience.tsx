@@ -16,7 +16,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -28,6 +30,7 @@ import {
   SURVEY_CONSENT_QUESTION,
   SURVEY_PROFILE_FIELDS,
   SURVEY_SECTIONS,
+  getProfileFieldOptions,
   surveyQuestions,
   type SurveyAnswerValue,
   type SurveyAnswers,
@@ -301,6 +304,7 @@ export function SurveyExperience() {
           {SURVEY_PROFILE_FIELDS.map((field) => {
             const value = answers[field.id];
             const error = errors[field.id];
+            const fieldOptions = getProfileFieldOptions(field);
             const errorId = error ? `${field.id}-error` : undefined;
             const descriptionId = field.description
               ? `${field.id}-description`
@@ -367,7 +371,7 @@ export function SurveyExperience() {
                       </p>
                     ) : null}
                     <Select
-                      items={field.options}
+                      items={fieldOptions}
                       value={typeof value === "string" ? value : null}
                       disabled={submitting}
                       aria-invalid={error ? true : undefined}
@@ -391,11 +395,22 @@ export function SurveyExperience() {
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {field.options?.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
+                        {field.groups
+                          ? field.groups.map((group) => (
+                              <SelectGroup key={group.label}>
+                                <SelectLabel>{group.label}</SelectLabel>
+                                {group.options.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            ))
+                          : fieldOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
                       </SelectContent>
                     </Select>
                   </>

@@ -394,6 +394,15 @@ export const SURVEY_CONSENT_ACCEPTED_VALUE = "a";
 
 export type SurveyProfileFieldType = "select" | "short-text";
 
+/**
+ * A labelled, non-selectable group of options inside a select field. Used for
+ * display grouping only — validation and storage use the flattened options.
+ */
+export type SurveyProfileOptionGroup = {
+  label: string;
+  options: SurveyOption[];
+};
+
 export type SurveyProfileField = {
   /** Stable identifier used as the answer key. */
   id: string;
@@ -402,31 +411,90 @@ export type SurveyProfileField = {
   type: SurveyProfileFieldType;
   required: boolean;
   options?: SurveyOption[];
+  /** Grouped display options for a select field (alternative to `options`). */
+  groups?: SurveyProfileOptionGroup[];
   maxLength?: number;
   placeholder?: string;
 };
 
+/**
+ * Every selectable option of a profile field, whether declared flat (`options`)
+ * or grouped (`groups`). Client validation, server-side validation, and the
+ * stored answer all use this single source of truth.
+ */
+export function getProfileFieldOptions(
+  field: SurveyProfileField,
+): SurveyOption[] {
+  if (field.groups) return field.groups.flatMap((group) => group.options);
+  return field.options ?? [];
+}
+
 export const SURVEY_PROFILE_FIELDS: SurveyProfileField[] = [
   /**
-   * NO PROFILE FIELDS ARE COLLECTED while their option lists are unverified.
+   * Programme / course — verified against the PCTE website (programme list
+   * supplied by the owner). The displayed names are the exact course names;
+   * the stored value is a stable internal slug (the analysis codebook). The
+   * three categories are display groups, not selectable values.
+   */
+  {
+    id: "profile_programme",
+    label: "Programme / course",
+    type: "select",
+    required: true,
+    groups: [
+      {
+        label: "Engineering & Technology",
+        options: [
+          {
+            value: "computer-science-engineering",
+            label: "Computer Science Engineering",
+          },
+          {
+            value: "btech-cse-cyber-security",
+            label: "B.Tech CSE (Cyber Security)",
+          },
+          {
+            value: "artificial-intelligence-ml",
+            label: "Artificial Intelligence & ML",
+          },
+          {
+            value: "mechanical-engineering",
+            label: "Mechanical Engineering",
+          },
+          { value: "civil-engineering", label: "Civil Engineering" },
+        ],
+      },
+      {
+        label: "Undergraduate (UG)",
+        options: [
+          { value: "bca", label: "BCA (Computer Applications)" },
+          { value: "bba", label: "BBA (Business Admin)" },
+          { value: "bcom-hons", label: "B.Com (Hons)" },
+          { value: "bpharm", label: "Pharmaceutical Sciences (B.Pharm)" },
+          { value: "bsc-fashion-designing", label: "B.Sc Fashion Designing" },
+          { value: "bhmct", label: "BHMCT (Hotel Management)" },
+          { value: "bajmc", label: "BAJMC (Journalism & Media)" },
+          { value: "bttm", label: "BTTM (Travel & Tourism)" },
+          { value: "bsc-mls", label: "B.Sc MLS (Medical Lab)" },
+        ],
+      },
+      {
+        label: "Postgraduate & Diploma",
+        options: [
+          { value: "mba", label: "MBA (Master of Business Admin)" },
+          { value: "mba-international-business", label: "MBA (International Business)" },
+          { value: "mba-fintech", label: "MBA (Fintech)" },
+          { value: "dpharm", label: "Diploma in Pharmacy (D.Pharm)" },
+        ],
+      },
+    ],
+  },
+
+  /**
+   * NOT COLLECTED — section/batch and admission cohort remain unverified. The
+   * supplied source verifies programme names only. Restore a field here once
+   * its options are confirmed against a PCTE source:
    *
-   * The approved survey document requires: collect Programme, Section/batch,
-   * and Admission cohort "only if the options can be verified against current
-   * PCTE records … If accurate options cannot be verified, omit the affected
-   * profile field" rather than launch with invented options.
-   *
-   * The candidate definitions below are placeholders collected during earlier
-   * planning; they were never verified against a PCTE source. To re-enable a
-   * field after verification, restore it into this array (the UI, validation,
-   * and server handling are all driven by this array):
-   *
-   * {
-   *   id: "profile_programme",
-   *   label: "Programme / course",
-   *   type: "select",
-   *   required: true,
-   *   options: [ … verified programme list with stable values … ],
-   * },
    * {
    *   id: "profile_section",
    *   label: "Class, section, or batch",
