@@ -306,9 +306,11 @@ It is **separate from the public site** and does not change the live survey.
   including identifying data). Files are UTF-8 CSV with a BOM so Excel opens them
   correctly; there is no in-browser spreadsheet library.
 
-Nothing in the admin area creates, edits or deletes rows, and every view
-re-authorises the request server-side — the session cookie is never trusted on
-its own.
+Nothing in the admin area creates, edits or deletes rows. Every view re-authorises
+the request server-side, and an edge guard (`src/proxy.ts`) rejects unauthenticated
+`/admin` requests before any page renders — the session cookie is never trusted on
+its own, and admin responses are marked `private, no-store` so no shared cache can
+hold them.
 
 ### Enabling it
 
@@ -340,6 +342,12 @@ no access.
   8 hours. Sign-in is a Server Action, so Next.js verifies the request origin.
 - Exports and every page are re-checked per request; unauthenticated API requests
   receive HTTP 401.
+- An edge guard (`src/proxy.ts`, Next.js Proxy) verifies the session cookie before
+  any `/admin` route renders and redirects unauthenticated visitors to
+  `/admin/login`. This is required because Cache Components renders a streamed
+  shell — a page-level `redirect()` alone would still let an unauthenticated
+  request receive a 200 containing admin data. Authenticated admin responses are
+  sent `Cache-Control: private, no-store`.
 - Because the responses contain names and phone numbers, treat any downloaded
   file as confidential and store it in line with the consent statement and the
   project's data-protection rules.
@@ -352,6 +360,7 @@ no access.
 
 ```
 src/
+  proxy.ts                 edge guard: authenticates /admin before any render
   app/                     routes, layout, global styles
     admin/                 server-rendered admin panel (login, overview, analysis, …)
     admin/exports/         CSV export route handlers (raw, aggregate)
@@ -373,7 +382,7 @@ src/
     fonts.ts               Instrument Serif + Manrope (next/font/google)
     site.ts                site constants and navigation
     analysis.ts            deterministic rule-based analysis engine
-    admin/                 server-only auth, data access, CSV, formatting
+    admin/                 server-only auth, session crypto, data access, CSV, formatting
     supabase/              browser/server Supabase helpers
 public/images/
   campaign/                supplied GreenFeed flyers

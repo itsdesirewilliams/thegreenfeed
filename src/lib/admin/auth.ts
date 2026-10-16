@@ -1,13 +1,15 @@
 import "server-only";
 
-import {
-  createHmac,
-  scryptSync,
-  timingSafeEqual,
-  createHash,
-} from "node:crypto";
+import { createHash, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import {
+  SESSION_COOKIE,
+  SESSION_TTL_SECONDS,
+  createSessionToken,
+  getSessionSecret,
+  verifySessionToken,
+} from "./session";
 
 /**
  * Admin authentication (server-only).
@@ -23,17 +25,18 @@ import { redirect } from "next/navigation";
  *
  * If ADMIN_SESSION_SECRET is missing, or neither password variable is set, the
  * admin area stays disabled and sign-in reports that it is not configured.
+ *
+ * The pure crypto lives in `./session` so `src/proxy.ts` can verify the cookie
+ * before any admin route renders. Defense in depth: every admin page and export
+ * route still calls `requireAdmin`/`requireAdminApi` independently.
  */
 
-export const SESSION_COOKIE = "gf_admin_session";
-const SESSION_TTL_SECONDS = 60 * 60 * 8; // 8 hours
-const MIN_SECRET_LENGTH = 16;
-
-function getSessionSecret(): string | null {
-  const secret = process.env.ADMIN_SESSION_SECRET ?? "";
-  if (secret.length < MIN_SECRET_LENGTH) return null;
-  return secret;
-}
+export {
+  SESSION_COOKIE,
+  SESSION_TTL_SECONDS,
+  createSessionToken,
+  verifySessionToken,
+};
 
 export function isAdminConfigured(): boolean {
   return (
@@ -74,46 +77,6 @@ export function verifyAdminPassword(password: string): boolean {
   }
 
   return false;
-}
-
-function sign(payload: string, secret: string): string {
-  return createHmac("sha256", secret).update(payload).digest("base64url");
-}
-
-/** Creates a signed session cookie value valid for the TTL. */
-export function createSessionToken(): string | null {
-  const secret = getSessionSecret();
-  if (!secret) return null;
-  const issuedAt = Math.floor(Date.now() / 1000);
-  const payload = Buffer.from(
-    JSON.stringify({ sub: "admin", iat: issuedAt, exp: issuedAt + SESSION_TTL_SECONDS }),
-  ).toString("base64url");
-  return `${payload}.${sign(payload, secret)}`;
-}
-
-/** Verifies signature and expiry of a session cookie value. */
-export function verifySessionToken(token: string | undefined): boolean {
-  const secret = getSessionSecret();
-  if (!secret || !token) return false;
-
-  const dot = token.lastIndexOf(".");
-  if (dot <= 0) return false;
-  const payload = token.slice(0, dot);
-  const signature = token.slice(dot + 1);
-
-  const expected = sign(payload, secret);
-  const a = Buffer.from(signature);
-  const b = Buffer.from(expected);
-  if (!safeEqual(a, b)) return false;
-
-  try {
-    const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as {
-      exp?: number;
-    };
-    return typeof data.exp === "number" && data.exp > Math.floor(Date.now() / 1000);
-  } catch {
-    return false;
-  }
 }
 
 export function sessionCookieOptions() {
