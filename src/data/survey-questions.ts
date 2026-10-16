@@ -11,16 +11,15 @@
  * later aggregate analysis. Treat responses as categorical data; never sum
  * them into a single score or claim causal effects from self-reports.
  *
- * `SURVEY_PUBLISHED` stays `false` until the owner has reviewed the complete
- * experience, a verified test submission exists in Supabase, and publication
- * is explicitly approved. See README ("Survey publication").
+ * `SURVEY_PUBLISHED` is `true`: the owner reviewed the complete experience and
+ * explicitly approved publication. See README ("Survey publication").
  *
  * Supported question types (schema general, current instrument single-choice):
  * short-text, long-text, single-choice, multiple-choice, yes-no.
  */
 export const SURVEY_SCHEMA_VERSION = "v2";
 
-export const SURVEY_PUBLISHED = false;
+export const SURVEY_PUBLISHED = true;
 
 export type SurveyQuestionType =
   | "short-text"
