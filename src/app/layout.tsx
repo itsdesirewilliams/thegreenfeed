@@ -33,6 +33,19 @@ export const metadata: Metadata = {
     description:
       "Practical waste-management guidance for students and communities.",
   },
+  /**
+   * Favicon: a simple green circle (🟢). The SVG is listed first so browsers
+   * that support it use the emoji; the PNG set is the same green circle for
+   * older browsers. The Apple touch icon is preserved unchanged.
+   */
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
