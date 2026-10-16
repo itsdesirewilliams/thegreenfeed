@@ -5,6 +5,7 @@ import {
   SURVEY_PUBLISHED,
   SURVEY_PROFILE_FIELDS,
   SURVEY_SCHEMA_VERSION,
+  getInstrumentQuestions,
   getProfileFieldOptions,
   isValidSurveyPhone,
   surveyQuestions,
@@ -116,14 +117,20 @@ export async function POST(request: Request) {
     );
   }
 
+  // Validate against the instrument that matches the DECLARED version, so a
+  // legacy v2/v3 submission is checked against the 16-question wording it was
+  // rendered from, and a v4 submission against the redesigned instrument. The
+  // client can never smuggle v4 option values into a v3 row (or vice versa).
+  const submissionQuestions = getInstrumentQuestions(submissionVersion);
+
   const submitted = answers as Record<string, unknown>;
 
-  // Only known keys are accepted: the 16 research questions, the consent
-  // decision, and the configured respondent-profile fields.
+  // Only known keys are accepted: this version's research questions, the
+  // consent decision, and the configured respondent-profile fields.
   const allowedKeys = new Set<string>([
     SURVEY_CONSENT_ID,
     ...SURVEY_PROFILE_FIELDS.map((field) => field.id),
-    ...surveyQuestions.map((question) => question.id),
+    ...submissionQuestions.map((question) => question.id),
   ]);
   for (const key of Object.keys(submitted)) {
     if (!allowedKeys.has(key)) {
@@ -193,12 +200,12 @@ export async function POST(request: Request) {
     profile[field.id] = trimmed;
   }
 
-  // Strict server-side validation of the 16 research questions against the
-  // approved schema. Unknown ids, wrong types, and unlisted option values are
-  // all rejected — JSONB does not make the payload trustworthy.
+  // Strict server-side validation of the declared version's research questions
+  // against the approved schema. Unknown ids, wrong types, and unlisted option
+  // values are all rejected — JSONB does not make the payload trustworthy.
   const validated: Record<string, SurveyAnswerValue> = {};
 
-  for (const question of surveyQuestions) {
+  for (const question of submissionQuestions) {
     const raw = submitted[question.id];
     if (raw === undefined) continue;
 
@@ -256,7 +263,7 @@ export async function POST(request: Request) {
 
   const fieldErrors = {
     ...profileFieldErrors,
-    ...validateSurveyAnswers(surveyQuestions, validated),
+    ...validateSurveyAnswers(submissionQuestions, validated),
   };
   if (Object.keys(fieldErrors).length > 0) {
     return Response.json(

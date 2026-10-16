@@ -4,6 +4,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import type { AnalysisRow } from "@/lib/analysis";
 import {
   SURVEY_PROFILE_FIELDS,
+  SYNTHETIC_COLUMN,
   getProfileFieldOptions,
 } from "@/data/survey-questions";
 
@@ -49,18 +50,54 @@ function makeClient() {
   }
 }
 
-/** Fetches every stored response (capped) for server-side aggregation. */
+type ProvenanceState = "unknown" | "ready" | "missing";
+let provenanceState: ProvenanceState = "unknown";
+
+/**
+ * Detects (once, cached) whether the synthetic-provenance columns exist. They
+ * are added by the provenance migration; until it is applied there can be no
+ * synthetic rows, so reading genuine-only is simply a no-op filter.
+ */
+async function detectProvenance(
+  client: ReturnType<typeof createAdminSupabaseClient>,
+): Promise<boolean> {
+  if (provenanceState !== "unknown") return provenanceState === "ready";
+  const { error } = await client
+    .from("survey_submissions")
+    .select(SYNTHETIC_COLUMN)
+    .limit(1);
+  provenanceState = error ? "missing" : "ready";
+  return provenanceState === "ready";
+}
+
+/** True when the synthetic-provenance columns are present in the database. */
+export async function isProvenanceReady(): Promise<boolean> {
+  return detectProvenance(makeClient());
+}
+
+/**
+ * Fetches every GENUINE stored response (capped) for server-side aggregation.
+ * Synthetic test rows are excluded by construction; once the provenance columns
+ * exist the exclusion is enforced in the query, and before then no synthetic
+ * rows can exist.
+ */
 export async function fetchAllRows(): Promise<AnalysisRow[]> {
   const client = makeClient();
+  const ready = await detectProvenance(client);
+
   const rows: AnalysisRow[] = [];
 
   for (let from = 0; from < MAX_ROWS; from += FETCH_PAGE_SIZE) {
     const to = Math.min(from + FETCH_PAGE_SIZE - 1, MAX_ROWS - 1);
-    const { data, error } = await client
+    // The filter works whether or not the provenance columns are selected.
+    let query = client
       .from("survey_submissions")
       .select("id, schema_version, created_at, answers")
       .order("created_at", { ascending: false })
       .range(from, to);
+    if (ready) query = query.eq(SYNTHETIC_COLUMN, false);
+
+    const { data, error } = await query;
 
     if (error) {
       throw new AdminDataError("Could not load survey responses.");
@@ -79,6 +116,86 @@ export async function fetchAllRows(): Promise<AnalysisRow[]> {
   }
 
   return rows;
+}
+
+export type SyntheticRow = {
+  id: string;
+  createdAt: string;
+  schemaVersion: string;
+  batchId: string | null;
+};
+
+export type SyntheticBatch = {
+  batchId: string | null;
+  count: number;
+  earliestAt: string | null;
+  latestAt: string | null;
+};
+
+export type SyntheticData = {
+  /** False when the provenance migration has not been applied yet. */
+  ready: boolean;
+  rows: SyntheticRow[];
+  batches: SyntheticBatch[];
+};
+
+/**
+ * Fetches synthetic test rows only, for the labelled admin testing view. Never
+ * used by research analysis or exports.
+ */
+export async function fetchSyntheticRows(): Promise<SyntheticData> {
+  const client = makeClient();
+  const ready = await detectProvenance(client);
+  if (!ready) return { ready: false, rows: [], batches: [] };
+
+  const { data, error } = await client
+    .from("survey_submissions")
+    .select("id, created_at, schema_version, synthetic_batch_id")
+    .eq(SYNTHETIC_COLUMN, true)
+    .order("created_at", { ascending: false })
+    .limit(MAX_ROWS);
+
+  if (error) {
+    throw new AdminDataError("Could not load synthetic test rows.");
+  }
+
+  const rows: SyntheticRow[] = (data ?? []).map((row) => ({
+    id: String(row.id),
+    createdAt: String(row.created_at ?? ""),
+    schemaVersion: String(row.schema_version ?? "unknown"),
+    batchId:
+      row.synthetic_batch_id === null || row.synthetic_batch_id === undefined
+        ? null
+        : String(row.synthetic_batch_id),
+  }));
+
+  const batchMap = new Map<
+    string,
+    { batchId: string | null; count: number; earliestAt: string | null; latestAt: string | null }
+  >();
+  for (const row of rows) {
+    const key = row.batchId ?? "__unbatched__";
+    const entry =
+      batchMap.get(key) ??
+      { batchId: row.batchId, count: 0, earliestAt: null, latestAt: null };
+    entry.count += 1;
+    const ts = Date.parse(row.createdAt);
+    if (!Number.isNaN(ts)) {
+      if (!entry.earliestAt || ts < Date.parse(entry.earliestAt)) {
+        entry.earliestAt = row.createdAt;
+      }
+      if (!entry.latestAt || ts > Date.parse(entry.latestAt)) {
+        entry.latestAt = row.createdAt;
+      }
+    }
+    batchMap.set(key, entry);
+  }
+
+  return {
+    ready: true,
+    rows,
+    batches: [...batchMap.values()].sort((a, b) => b.count - a.count),
+  };
 }
 
 export type ProgrammeCount = {
@@ -162,9 +279,12 @@ export function computeProgrammeCounts(rows: AnalysisRow[]): {
 
 export async function getOverview(rows: AnalysisRow[]): Promise<Overview> {
   const client = makeClient();
-  const { count, error } = await client
+  const ready = await detectProvenance(client);
+  let countQuery = client
     .from("survey_submissions")
     .select("id", { count: "exact", head: true });
+  if (ready) countQuery = countQuery.eq(SYNTHETIC_COLUMN, false);
+  const { count, error } = await countQuery;
 
   if (error) {
     throw new AdminDataError("Could not count survey responses.");
@@ -243,11 +363,15 @@ export async function listResponses(
   const from = (safePage - 1) * RESPONSES_PAGE_SIZE;
   const to = from + RESPONSES_PAGE_SIZE - 1;
 
-  const { data, error, count } = await client
+  const ready = await detectProvenance(client);
+  let query = client
     .from("survey_submissions")
     .select("id, created_at, schema_version, answers", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
+  if (ready) query = query.eq(SYNTHETIC_COLUMN, false);
+
+  const { data, error, count } = await query;
 
   if (error) {
     throw new AdminDataError("Could not load the response list.");

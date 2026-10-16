@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
-import { AdminPageHeader, Bars, Panel } from "@/components/admin/bits";
+import { AdminPageHeader, Bars, Panel, VersionNotice } from "@/components/admin/bits";
 import { ErrorPanel } from "@/components/admin/error-panel";
 import { requireAdmin } from "@/lib/admin/auth";
 import { fetchAllRows } from "@/lib/admin/data";
@@ -36,7 +36,13 @@ export default async function AdminQuestionsPage() {
     <div className="flex flex-col gap-6">
       <AdminPageHeader
         title="Question distributions"
-        description="Counts and percentages per option. Missing or invalid answers are excluded from the valid denominator and shown separately. Percentages are rounded; A/B/C are categorical, never summed."
+        description="Counts and percentages per option. Missing or invalid answers are excluded from the valid denominator and shown separately. Percentages are rounded; the letters are categorical, never summed."
+      />
+
+      <VersionNotice
+        analysedVersion={analysis.dataQuality.analysedVersion}
+        excludedVersions={analysis.dataQuality.excludedVersions}
+        unsupportedWarning={analysis.dataQuality.unsupportedWarning}
       />
 
       {analysis.dataQuality.sampleWarning ? (

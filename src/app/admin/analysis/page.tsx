@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
-import { AdminPageHeader, Panel } from "@/components/admin/bits";
+import { AdminPageHeader, Panel, VersionNotice } from "@/components/admin/bits";
 import { ErrorPanel } from "@/components/admin/error-panel";
 import { requireAdmin } from "@/lib/admin/auth";
 import { fetchAllRows } from "@/lib/admin/data";
@@ -39,6 +39,12 @@ export default async function AdminAnalysisPage() {
       <AdminPageHeader
         title="Analysis & conclusions"
         description="Deterministic, rule-based findings from the stored responses. Every rule and threshold is shown. This is descriptive analysis — not proof of cause, effectiveness or representativeness."
+      />
+
+      <VersionNotice
+        analysedVersion={dataQuality.analysedVersion}
+        excludedVersions={dataQuality.excludedVersions}
+        unsupportedWarning={dataQuality.unsupportedWarning}
       />
 
       {dataQuality.sampleWarning ? (

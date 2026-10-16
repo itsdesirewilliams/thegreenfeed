@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AdminPageHeader, Bars, Panel, Stat } from "@/components/admin/bits";
+import { AdminPageHeader, Bars, Panel, Stat, VersionNotice } from "@/components/admin/bits";
 import { ErrorPanel } from "@/components/admin/error-panel";
 import { requireAdmin } from "@/lib/admin/auth";
 import { fetchAllRows, getOverview } from "@/lib/admin/data";
@@ -36,6 +36,12 @@ export default async function AdminOverviewPage() {
       <AdminPageHeader
         title="Overview"
         description="Real submissions only. No records are fabricated, edited or deleted from here."
+      />
+
+      <VersionNotice
+        analysedVersion={analysis.dataQuality.analysedVersion}
+        excludedVersions={analysis.dataQuality.excludedVersions}
+        unsupportedWarning={analysis.dataQuality.unsupportedWarning}
       />
 
       {overview.truncated ? (

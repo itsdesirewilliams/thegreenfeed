@@ -1,17 +1,20 @@
 /**
- * Verifies that src/data/survey-questions.ts matches the approved survey
+ * Verifies that the FROZEN v2/v3 instrument matches the approved survey
  * document word for word.
  *
  * Usage:
  *   node scripts/verify-survey-wording.mjs <path-to-TheGreenFeed_16_Question_Survey.md>
  *
- * Compares every question label and every option label in section order, plus
- * the exact consent statement shown on the student-details screen. Exits
- * non-zero on any mismatch. No secrets involved; reads only the two source
- * files.
+ * The live instrument is now v4 (redesigned). Historical rows were collected
+ * with the v2/v3 16-question wording, which lives frozen in
+ * `src/data/survey/v3.ts`. This script guards that snapshot against accidental
+ * edits. Exits non-zero on any mismatch. No secrets involved.
  */
 import { readFileSync } from "node:fs";
-import { surveyQuestions, SURVEY_CONSENT_STATEMENT } from "../src/data/survey-questions.ts";
+import { V3_INSTRUMENT } from "../src/data/survey/v3.ts";
+import { SURVEY_CONSENT_STATEMENT } from "../src/data/survey/profile.ts";
+
+const surveyQuestions = V3_INSTRUMENT.questions;
 
 const mdPath = process.argv[2];
 if (!mdPath) {
@@ -86,4 +89,4 @@ if (SURVEY_CONSENT_STATEMENT !== expectedConsentStatement) {
 
 console.log(`Compared ${docQuestions.length} questions, ${failures} mismatches`);
 if (failures > 0) process.exit(1);
-console.log("Survey data matches the approved document word for word.");
+console.log("Frozen v3 instrument matches the approved document word for word.");

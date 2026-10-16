@@ -1,7 +1,11 @@
 import { requireAdminApi } from "@/lib/admin/auth";
 import { AdminDataError, fetchAllRows } from "@/lib/admin/data";
 import { toCsv, withBom, type CsvCell } from "@/lib/admin/csv";
-import { surveyQuestions } from "@/data/survey-questions";
+import { toIsoUtc } from "@/lib/admin/format";
+import {
+  SURVEY_INSTRUMENT_VERSIONS,
+  getInstrumentQuestions,
+} from "@/data/survey-questions";
 
 /**
  * Raw response export (admin only, sensitive).
@@ -27,7 +31,16 @@ export async function GET() {
     return new Response(message, { status: 500 });
   }
 
-  const questionIds = surveyQuestions.map((question) => question.id);
+  // Every question id across all supported versions, so a row from any
+  // instrument (v2/v3 16-question, v4 redesigned) lands in the right columns.
+  const questionIds = Array.from(
+    new Set(
+      SURVEY_INSTRUMENT_VERSIONS.flatMap((version) =>
+        getInstrumentQuestions(version).map((question) => question.id),
+      ),
+    ),
+  ).sort((a, b) => Number(a.replace(/\D/g, "")) - Number(b.replace(/\D/g, "")));
+
   const header: CsvCell[] = [
     "id",
     "created_at",
@@ -41,7 +54,7 @@ export async function GET() {
 
   const body: CsvCell[][] = rows.map((row) => [
     row.id,
-    row.created_at,
+    toIsoUtc(row.created_at),
     row.schema_version,
     typeof row.answers.profile_full_name === "string"
       ? row.answers.profile_full_name

@@ -66,6 +66,30 @@ if (error) {
 
 console.log(`Table reachable. Rows: ${count ?? 0}`);
 
+// Provenance check (synthetic-data migration). Never prints answers.
+const { error: provenanceError } = await client
+  .from("survey_submissions")
+  .select("is_synthetic")
+  .limit(1);
+
+if (provenanceError) {
+  console.log(
+    "Provenance columns: MISSING — apply supabase/migrations/20261016000000_survey_provenance.sql",
+  );
+} else {
+  console.log("Provenance columns: present");
+  const { count: genuine } = await client
+    .from("survey_submissions")
+    .select("id", { count: "exact", head: true })
+    .eq("is_synthetic", false);
+  const { count: synthetic } = await client
+    .from("survey_submissions")
+    .select("id", { count: "exact", head: true })
+    .eq("is_synthetic", true);
+  console.log(`Genuine rows: ${genuine ?? 0}`);
+  console.log(`Synthetic rows: ${synthetic ?? 0}`);
+}
+
 const { data, error: latestError } = await client
   .from("survey_submissions")
   .select("id, schema_version, created_at")

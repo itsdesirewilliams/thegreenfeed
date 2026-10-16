@@ -9,7 +9,10 @@
     "lint": "eslint",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "verify:survey": "node scripts/verify-survey-wording.mjs"
+    "verify:survey": "node scripts/verify-survey-wording.mjs",
+    "verify:survey-consistency": "node scripts/verify-survey-consistency.mjs",
+    "verify:survey-db": "node scripts/verify-survey-db.mjs",
+    "docs:questionnaire": "node scripts/generate-questionnaire-doc.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

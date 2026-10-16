@@ -1,17 +1,20 @@
-# TheGreenFeed survey redesign — proposal (v4)
+# TheGreenFeed survey redesign — implemented (v4)
 
-**Status: proposal only. Not published. The live instrument remains `v3`.**
+**Status: implemented. `v4` is the live instrument; `v2`/`v3` are frozen.**
 
-This document is the Part A deliverable for the survey-redesign brief. It reviews
-the currently published 16-question instrument (`src/data/survey-questions.ts`,
-schema `v3`), proposes a stronger versioned instrument (`v4`) and a matching
-deterministic codebook, and gives a migration/compatibility plan. Nothing here
-changes the live survey; publishing `v4` requires explicit owner approval and a
-separate implementation step (see *Migration plan*).
+This document was the Part A deliverable for the survey-redesign brief. It
+reviewed the previously published 16-question instrument (now frozen as `v3`),
+proposed a stronger versioned instrument (`v4`) and a matching deterministic
+codebook, and gave a migration/compatibility plan. That plan has since been
+implemented: `v4` lives in `src/data/survey/v4.ts`, its codebook in
+`src/data/analysis-framework-v4.json`, and the analysis engine and admin panel
+select the codebook by each row's `schema_version`. Rows collected under the old
+wording remain interpretable via the frozen `v3` instrument.
 
-The analysis codebook for the **currently published** instrument lives in
-`src/data/analysis-framework.json` (typed access in
-`src/data/analysis-framework.ts`) and is what the admin panel evaluates today.
+The analysis codebook for the **previous** instrument is frozen alongside it in
+`src/data/analysis-framework.json`; the live `v4` codebook is in
+`src/data/analysis-framework-v4.json` (typed access via
+`src/data/analysis-framework.ts`).
 
 ---
 
@@ -170,31 +173,30 @@ names/phones out of aggregates.
 
 ---
 
-## 6. Migration & compatibility plan
+## 6. Migration & compatibility plan (implemented)
 
-1. **Do not edit or republish `v3`.** The live instrument, its validation and its
-   codebook stay exactly as they are.
-2. When `v4` is approved and implemented, it becomes a **new schema version**
-   (`v4`) with its own `SURVEY_SCHEMA_VERSION` and its own codebook. Existing
-   `v2`/`v3` rows remain interpretable with the current codebook; `v4` rows are
-   analysed with the `v4` codebook. **Never mix versions in one distribution.**
-3. The admin panel already shows per-version counts; the analysis page must select
-   the codebook that matches the filtered version(s). Until `v4` ships, only the
-   current codebook is used.
-4. No database change is required: new items still live inside the `answers`
-   JSONB. Only if `v4` needs new indexed columns would a non-destructive migration
-   be proposed (not needed at present).
-5. Recommended rollout (implemented only on explicit approval):
-   - add `src/data/survey-v4.ts` (or bump `survey-questions.ts` behind a version
-     switch) and a `v4` codebook file;
-   - keep accepting `v2`/`v3` during the transition, tagging each row by its
-     declared version (already the pattern in `route.ts`);
-   - update the survey UI copy and consent text only if the owner approves;
-   - pilot the new wording with a few respondents before full launch.
+1. **`v3` was frozen, not edited.** The old instrument now lives verbatim in
+   `src/data/survey/v3.ts` and its wording is guarded by
+   `scripts/verify-survey-wording.mjs`.
+2. `v4` is a **new schema version** with its own `SURVEY_SCHEMA_VERSION` and its
+   own codebook (`src/data/analysis-framework-v4.json`). `v2`/`v3` rows are
+   interpreted with the frozen `v3` codebook; `v4` rows with the `v4` codebook.
+   **Versions are never mixed in one distribution.**
+3. The analysis engine (`src/lib/analysis.ts`) and admin pages select the
+   codebook that matches the data via `getAnalysisFramework(version)`, and each
+   page shows which version was analysed plus any excluded responses.
+4. No database change was required: new items still live inside the `answers`
+   JSONB.
+5. Rollout as implemented:
+   - `src/data/survey/v4.ts` (live) plus a `v4` codebook file;
+   - `v2`/`v3` are still accepted, each row tagged by its declared version in
+     `route.ts` and validated against that version's questions;
+   - the survey UI renders `v4` through the `survey-questions.ts` facade.
 
-**Outstanding local facts to confirm before `v4` ships:** fine amounts and exact
-rule wording; the real bin/stream system (for q14); campus event/message names
-and cadence. These are flagged, not invented.
+**Outstanding local facts to confirm before the affected items can ship:** the
+real bin/stream system (for `q14`, currently reserved and not shipped); fine
+amounts and exact rule wording; campus event/message names and cadence. These
+are flagged, not invented.
 
 ---
 

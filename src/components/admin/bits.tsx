@@ -75,6 +75,43 @@ export function Panel({
   );
 }
 
+export function VersionNotice({
+  analysedVersion,
+  excludedVersions,
+  unsupportedWarning,
+}: {
+  analysedVersion: string;
+  excludedVersions: { version: string; count: number }[];
+  unsupportedWarning?: string | null;
+}) {
+  const excludedTotal = excludedVersions.reduce(
+    (sum, entry) => sum + entry.count,
+    0,
+  );
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="rounded-lg bg-secondary px-4 py-3 text-sm text-forest">
+        These figures use the <strong>{analysedVersion}</strong> instrument.
+        {excludedTotal > 0
+          ? ` ${excludedTotal} response(s) from other instrument versions (${
+              excludedVersions
+                .map((entry) => `${entry.version}: ${entry.count}`)
+                .join(", ")
+            }) are stored but excluded — versions are never mixed in one distribution.`
+          : " No responses from other instrument versions are present."}
+      </p>
+      {unsupportedWarning ? (
+        <p
+          role="alert"
+          className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200"
+        >
+          {unsupportedWarning}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export type BarItem = {
   label: string;
   count: number;

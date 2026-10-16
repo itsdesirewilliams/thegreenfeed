@@ -12,8 +12,10 @@ import { load } from "@/lib/admin/load";
 import {
   SURVEY_CONSENT_ID,
   SURVEY_PROFILE_FIELDS,
+  getInstrumentQuestions,
   getProfileFieldOptions,
-  surveyQuestions,
+  isSupportedSurveyVersion,
+  type SurveyQuestion,
 } from "@/data/survey-questions";
 import { formatDateTime } from "@/lib/admin/format";
 
@@ -26,8 +28,12 @@ function asText(value: unknown): string | null {
   return null;
 }
 
-function optionLabel(questionId: string, value: unknown): string | null {
-  const question = surveyQuestions.find((entry) => entry.id === questionId);
+function optionLabel(
+  questions: SurveyQuestion[],
+  questionId: string,
+  value: unknown,
+): string | null {
+  const question = questions.find((entry) => entry.id === questionId);
   const raw = asText(value);
   if (!raw) return null;
   const option = question?.options?.find((entry) => entry.value === raw);
@@ -56,6 +62,17 @@ export default async function AdminResponseDetailPage(props: {
   const name = asText(answers.profile_full_name);
   const programme = asText(answers.profile_programme);
   const phone = asText(answers.profile_phone);
+
+  // Label this row with the instrument that actually produced it. An unknown
+  // version is never reinterpreted as the current instrument: show the raw
+  // stored answers and a warning instead.
+  const supported = isSupportedSurveyVersion(response.schemaVersion);
+  const questions = supported
+    ? getInstrumentQuestions(response.schemaVersion)
+    : [];
+  const rawAnswers = Object.entries(answers)
+    .filter(([key]) => key !== SURVEY_CONSENT_ID)
+    .sort(([a], [b]) => a.localeCompare(b));
 
   const programmeField = SURVEY_PROFILE_FIELDS.find(
     (field) => field.id === "profile_programme",
@@ -86,6 +103,20 @@ export default async function AdminResponseDetailPage(props: {
         </AlertDescription>
       </Alert>
 
+      {supported ? null : (
+        <Alert variant="destructive">
+          <ShieldAlert />
+          <AlertTitle>Unsupported instrument version</AlertTitle>
+          <AlertDescription>
+            This row was stored with schema version{" "}
+            <code>{response.schemaVersion}</code>, which this build cannot
+            interpret. It is never reinterpreted as the current instrument: it is
+            excluded from version-specific analysis and shown below as raw stored
+            answers only.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Panel title="Student details">
         <dl className="grid gap-4 sm:grid-cols-3">
           <div>
@@ -113,45 +144,90 @@ export default async function AdminResponseDetailPage(props: {
         </p>
       </Panel>
 
-      <Panel title="Answers">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <caption className="sr-only">Recorded answers for this response</caption>
-            <thead>
-              <tr className="border-b border-hairline text-left text-muted-ink">
-                <th scope="col" className="py-2 pr-3 font-medium">
-                  #
-                </th>
-                <th scope="col" className="py-2 pr-3 font-medium">
-                  Question
-                </th>
-                <th scope="col" className="py-2 font-medium">
-                  Answer
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {surveyQuestions.map((question) => {
-                const answer = optionLabel(question.id, answers[question.id]);
-                return (
-                  <tr
-                    key={question.id}
-                    className="border-b border-hairline/60 align-top"
-                  >
+      {supported ? (
+        <Panel title="Answers">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <caption className="sr-only">
+                Recorded answers for this response
+              </caption>
+              <thead>
+                <tr className="border-b border-hairline text-left text-muted-ink">
+                  <th scope="col" className="py-2 pr-3 font-medium">
+                    #
+                  </th>
+                  <th scope="col" className="py-2 pr-3 font-medium">
+                    Question
+                  </th>
+                  <th scope="col" className="py-2 font-medium">
+                    Answer
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {questions.map((question) => {
+                  const answer = optionLabel(
+                    questions,
+                    question.id,
+                    answers[question.id],
+                  );
+                  return (
+                    <tr
+                      key={question.id}
+                      className="border-b border-hairline/60 align-top"
+                    >
+                      <td className="py-2 pr-3 font-mono text-xs text-muted-ink">
+                        {question.id}
+                      </td>
+                      <td className="py-2 pr-3 text-ink">{question.label}</td>
+                      <td className="py-2">
+                        {answer ?? <Badge variant="outline">No answer</Badge>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+      ) : (
+        <Panel
+          title="Raw stored answers"
+          description="Unsupported version — values shown verbatim, without instrument labels."
+        >
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <caption className="sr-only">
+                Raw stored answers for this response
+              </caption>
+              <thead>
+                <tr className="border-b border-hairline text-left text-muted-ink">
+                  <th scope="col" className="py-2 pr-3 font-medium">
+                    Key
+                  </th>
+                  <th scope="col" className="py-2 font-medium">
+                    Stored value
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rawAnswers.map(([key, value]) => (
+                  <tr key={key} className="border-b border-hairline/60 align-top">
                     <td className="py-2 pr-3 font-mono text-xs text-muted-ink">
-                      {question.id}
+                      {key}
                     </td>
-                    <td className="py-2 pr-3 text-ink">{question.label}</td>
-                    <td className="py-2">
-                      {answer ?? <Badge variant="outline">No answer</Badge>}
+                    <td className="py-2 text-ink">
+                      {typeof value === "string" || typeof value === "number"
+                        ? String(value)
+                        : JSON.stringify(value)}
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </Panel>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
+      )}
     </div>
   );
 }

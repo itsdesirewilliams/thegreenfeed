@@ -1,18 +1,18 @@
-import rawFramework from "./analysis-framework.json";
+import rawV3 from "./analysis-framework.json";
+import rawV4 from "./analysis-framework-v4.json";
 
 /**
- * Typed access to the deterministic analysis codebook.
+ * Typed access to the deterministic analysis codebooks.
  *
- * The JSON is the existing "TheGreenFeed Deterministic Survey Analysis
- * Framework" for the **currently published instrument** (`q1`–`q16`, schema
- * `v2`/`v3`). It is the single source of truth for option interpretations,
- * section purposes, guardrails and the action library. The deterministic engine
- * in `src/lib/analysis.ts` evaluates it against real stored responses.
+ * There is one codebook per instrument version. `v2`/`v3` rows use the original
+ * "TheGreenFeed Deterministic Survey Analysis Framework"; `v4` rows use the
+ * redesigned codebook (`analysis-framework-v4.json`). Rows are always analysed
+ * with the codebook that matches their `schema_version` — never a mix.
  *
- * Do not reword the question/option labels here — they are read from
- * `src/data/survey-questions.ts` at runtime so the codebook and the live
+ * Do not reword question/option labels here — they are read from the versioned
+ * instrument (`src/data/survey/*`) at runtime so the codebook and the live
  * questionnaire cannot drift. This file only carries the *interpretations* and
- * *rules*, keyed by the stable `a`/`b`/`c` codes.
+ * *rules*, keyed by the stable codes.
  */
 
 export type DominanceKind =
@@ -93,6 +93,7 @@ export type StudentDetailsPrivacy = {
 
 export type AnalysisFramework = {
   schemaVersion: string;
+  instrumentVersion?: string;
   title: string;
   purpose: string;
   method: AnalysisMethod;
@@ -112,8 +113,38 @@ export type AnalysisFramework = {
   limitations: string[];
 };
 
-export const ANALYSIS_FRAMEWORK = rawFramework as unknown as AnalysisFramework;
+/** Codebook for the frozen v2/v3 instrument. */
+export const ANALYSIS_FRAMEWORK_V3 = rawV3 as unknown as AnalysisFramework;
 
+/** Codebook for the current v4 instrument. */
+export const ANALYSIS_FRAMEWORK_V4 = rawV4 as unknown as AnalysisFramework;
+
+/** The codebook for the current instrument (v4). */
+export const ANALYSIS_FRAMEWORK = ANALYSIS_FRAMEWORK_V4;
+
+const FRAMEWORKS: Record<string, AnalysisFramework> = {
+  v2: ANALYSIS_FRAMEWORK_V3,
+  v3: ANALYSIS_FRAMEWORK_V3,
+  v4: ANALYSIS_FRAMEWORK_V4,
+};
+
+/**
+ * The codebook for a stored `schema_version`. Throws for an unknown version
+ * instead of falling back to the current (v4) codebook, so rows of unknown
+ * provenance are never analysed with the wrong interpretations. Callers should
+ * check `isSupportedSurveyVersion` before asking for a framework.
+ */
+export function getAnalysisFramework(version: string): AnalysisFramework {
+  const framework = FRAMEWORKS[version];
+  if (!framework) {
+    throw new Error(
+      `No analysis codebook for survey version "${version}" — refusing to fall back to the current codebook.`,
+    );
+  }
+  return framework;
+}
+
+// Back-compat singletons (current instrument). Prefer `getAnalysisFramework`.
 export const ANALYSIS_QUESTIONS = ANALYSIS_FRAMEWORK.questions;
 export const ANALYSIS_SECTIONS = ANALYSIS_FRAMEWORK.sectionAnalysis;
 export const ANALYSIS_METHOD = ANALYSIS_FRAMEWORK.method;

@@ -1,0 +1,1078 @@
+{
+  "schemaVersion": "2.0.0",
+  "instrumentVersion": "v4",
+  "title": "TheGreenFeed Deterministic Survey Analysis Framework (v4)",
+  "purpose": "A versioned rules-and-interpretation file for turning aggregate v4 survey responses into transparent findings and practical next steps. Dimensions stay separate; categorical answers are never summed into a score.",
+  "method": {
+    "type": "deterministic_rule_based",
+    "displayCountsAndPercentages": true,
+    "reportValidNForEveryQuestion": true,
+    "dominance": {
+      "majority": "leading option > 50% of valid answers",
+      "plurality": "leading option is largest but <= 50%",
+      "closeSplit": "top two options differ by < 10 percentage points; describe as mixed",
+      "tie": "two or more options share the highest count",
+      "minimumNForInterpretiveLanguage": 10,
+      "smallSampleWarning": "For N < 10, show descriptive counts but label interpretation preliminary."
+    },
+    "guardrails": [
+      "Use cautious language: may indicate, is consistent with, suggests.",
+      "Never claim causation from this cross-sectional self-report survey.",
+      "Do not infer why a student chose an answer unless the survey asked why.",
+      "Do not treat missing answers as an option value.",
+      "Show N and counts alongside percentages; small percentage differences are not automatically meaningful.",
+      "Compare related questions before recommending an intervention.",
+      "Do not claim respondents represent all PCTE students unless the sampling method supports that.",
+      "Separate observed facts from interpretation and recommendations.",
+      "Confidence is not knowledge; knowledge is not behaviour; a stated intention is not an action."
+    ]
+  },
+  "studentDetailsPrivacy": {
+    "fields": [
+      "profile_full_name",
+      "profile_programme",
+      "profile_phone"
+    ],
+    "rules": [
+      "Because name and course are collected, do not call responses anonymous.",
+      "Keep names and phone numbers out of aggregate analysis and analysis exports.",
+      "Raw response export contains identifying data and must be admin-only.",
+      "Suppress or combine very small programme groups in breakdowns."
+    ]
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "section": "Campus conditions and convenience",
+      "construct": "Reported frequency of encountering improper disposal",
+      "options": {
+        "a": {
+          "label": "Never",
+          "interpretation": "Low reported exposure to improper disposal in the respondent's usual areas."
+        },
+        "b": {
+          "label": "Rarely",
+          "interpretation": "Low reported exposure; may reflect cleaner routes or lower exposure."
+        },
+        "c": {
+          "label": "Sometimes",
+          "interpretation": "An intermittent or location-specific problem may be present."
+        },
+        "d": {
+          "label": "Often",
+          "interpretation": "A visible problem may warrant hotspot checks and direct observation."
+        },
+        "e": {
+          "label": "Very often",
+          "interpretation": "A frequently reported problem; pair with q2 to locate perceived hotspots."
+        }
+      },
+      "crossChecks": [
+        "q2",
+        "q3",
+        "q4",
+        "q5"
+      ],
+      "analysisCaveat": "Self-reported perception, not an objective waste audit or proof of actual conditions."
+    },
+    {
+      "id": "q2",
+      "section": "Campus conditions and convenience",
+      "construct": "Perceived location of problems",
+      "options": {
+        "a": {
+          "label": "Canteens, food areas or student gathering spots",
+          "interpretation": "Inspect food packaging, peak traffic, bin access and collection frequency."
+        },
+        "b": {
+          "label": "Classrooms, corridors or other shared indoor areas",
+          "interpretation": "Review indoor bin access, labels, routines and cleaning schedules."
+        },
+        "c": {
+          "label": "Outdoor areas, pathways or other places around campus",
+          "interpretation": "Review outdoor bin placement, high-traffic paths and wind-blown litter."
+        },
+        "d": {
+          "label": "Not sure",
+          "interpretation": "The respondent cannot name a hotspot; do not treat this as 'no problem'."
+        }
+      },
+      "crossChecks": [
+        "q1",
+        "q3",
+        "q4",
+        "q5",
+        "q15"
+      ],
+      "analysisCaveat": "Identifies broad perceived areas, not exact locations; a genuine 'not sure' is not a location."
+    },
+    {
+      "id": "q3",
+      "section": "Campus conditions and convenience",
+      "construct": "Perceived bin availability and access",
+      "options": {
+        "a": {
+          "label": "Never",
+          "interpretation": "Strong reported access barrier; verify against a physical bin audit."
+        },
+        "b": {
+          "label": "Rarely",
+          "interpretation": "Frequent reported access barrier."
+        },
+        "c": {
+          "label": "Sometimes",
+          "interpretation": "Intermittent access; may be location- or time-dependent."
+        },
+        "d": {
+          "label": "Often",
+          "interpretation": "Access is generally reported as adequate."
+        },
+        "e": {
+          "label": "Always",
+          "interpretation": "Access is consistently reported as adequate."
+        },
+        "f": {
+          "label": "Not sure",
+          "interpretation": "The respondent cannot judge availability; not evidence of a barrier either way."
+        }
+      },
+      "crossChecks": [
+        "q4",
+        "q5",
+        "q7",
+        "q15",
+        "q16"
+      ],
+      "analysisCaveat": "Perceived access only; the survey cannot measure whether a bin physically exists, its capacity or collection schedule."
+    },
+    {
+      "id": "q4",
+      "section": "Campus conditions and convenience",
+      "construct": "Perceived bin overflow and collection",
+      "options": {
+        "a": {
+          "label": "Never",
+          "interpretation": "Overflow is rarely reported."
+        },
+        "b": {
+          "label": "Rarely",
+          "interpretation": "Overflow is seldom reported."
+        },
+        "c": {
+          "label": "Sometimes",
+          "interpretation": "Intermittent overflow; could be peak-load or collection timing."
+        },
+        "d": {
+          "label": "Often",
+          "interpretation": "Frequent reported overflow; may indicate capacity or collection gaps."
+        },
+        "e": {
+          "label": "Always",
+          "interpretation": "Consistent reported overflow; a strong capacity/collection signal to verify."
+        },
+        "f": {
+          "label": "Not sure",
+          "interpretation": "The respondent cannot judge; not evidence of overflow either way."
+        }
+      },
+      "crossChecks": [
+        "q3",
+        "q5",
+        "q7",
+        "q15",
+        "q16"
+      ],
+      "analysisCaveat": "Reported perception, not measured waste volumes or an audit of bin capacity and collection."
+    },
+    {
+      "id": "q5",
+      "section": "Campus conditions and convenience",
+      "construct": "Perceived clarity of bin labels",
+      "options": {
+        "a": {
+          "label": "Clear everywhere",
+          "interpretation": "Labels are reported as clear across campus."
+        },
+        "b": {
+          "label": "Clear in some places only",
+          "interpretation": "Inconsistent labelling; check the areas that are less clear."
+        },
+        "c": {
+          "label": "Not clear",
+          "interpretation": "Labels are reported as unclear; a labelling gap is plausible."
+        },
+        "d": {
+          "label": "No labels",
+          "interpretation": "Labels are reported as absent in the places the respondent uses."
+        },
+        "e": {
+          "label": "Not sure",
+          "interpretation": "The respondent has not registered the labels; not evidence of clarity."
+        }
+      },
+      "crossChecks": [
+        "q3",
+        "q4",
+        "q12",
+        "q13",
+        "q15"
+      ],
+      "analysisCaveat": "Perceived label clarity; does not test whether the labels match the real campus waste streams."
+    },
+    {
+      "id": "q6",
+      "section": "Attitudes, norms and reported behaviour",
+      "construct": "Personal attitude to littering",
+      "options": {
+        "a": {
+          "label": "It is not a problem",
+          "interpretation": "Respondent does not see littering as a problem; a normative or awareness issue may exist."
+        },
+        "b": {
+          "label": "I dislike it but it is common",
+          "interpretation": "Disapproval alongside a perceived norm of littering."
+        },
+        "c": {
+          "label": "I dislike it and think it should be addressed",
+          "interpretation": "Strong personal disapproval; an attitude, not observed behaviour."
+        }
+      },
+      "crossChecks": [
+        "q8",
+        "q9"
+      ],
+      "analysisCaveat": "A stated attitude, not a behaviour; social-desirability bias is likely."
+    },
+    {
+      "id": "q7",
+      "section": "Attitudes, norms and reported behaviour",
+      "construct": "Reported usual disposal behaviour when a bin is inconvenient",
+      "options": {
+        "a": {
+          "label": "Leave it near the nearest bin",
+          "interpretation": "A reported littering behaviour when a bin is inconvenient."
+        },
+        "b": {
+          "label": "Look for another bin",
+          "interpretation": "A reported effort to find an appropriate bin."
+        },
+        "c": {
+          "label": "Keep it with me until I find a bin",
+          "interpretation": "A reported effort to hold waste until a bin is found."
+        },
+        "d": {
+          "label": "Take it away with me",
+          "interpretation": "A reported effort to carry waste and dispose of it later."
+        }
+      },
+      "crossChecks": [
+        "q3",
+        "q4",
+        "q5",
+        "q15"
+      ],
+      "analysisCaveat": "Self-reported behaviour, not observed conduct; option wording aims to avoid making one answer sound virtuous."
+    },
+    {
+      "id": "q8",
+      "section": "Attitudes, norms and reported behaviour",
+      "construct": "Perceived peer norm",
+      "options": {
+        "a": {
+          "label": "Almost none",
+          "interpretation": "The respondent believes very few peers dispose properly."
+        },
+        "b": {
+          "label": "A minority",
+          "interpretation": "The respondent believes a minority of peers dispose properly."
+        },
+        "c": {
+          "label": "About half",
+          "interpretation": "A neutral perceived norm."
+        },
+        "d": {
+          "label": "A majority",
+          "interpretation": "The respondent believes most peers dispose properly."
+        },
+        "e": {
+          "label": "Almost all",
+          "interpretation": "The respondent believes nearly all peers dispose properly."
+        },
+        "f": {
+          "label": "Not sure",
+          "interpretation": "No formed perception; not evidence of a norm either way."
+        }
+      },
+      "crossChecks": [
+        "q6",
+        "q9"
+      ],
+      "analysisCaveat": "Perceived norm, not measured behaviour of classmates."
+    },
+    {
+      "id": "q9",
+      "section": "Attitudes, norms and reported behaviour",
+      "construct": "Stated likelihood of respectfully intervening",
+      "options": {
+        "a": {
+          "label": "Very unlikely",
+          "interpretation": "Low stated likelihood of intervening."
+        },
+        "b": {
+          "label": "Unlikely",
+          "interpretation": "Low-to-moderate stated likelihood of intervening."
+        },
+        "c": {
+          "label": "Unsure",
+          "interpretation": "No firm intention either way."
+        },
+        "d": {
+          "label": "Likely",
+          "interpretation": "Moderate stated likelihood of intervening."
+        },
+        "e": {
+          "label": "Very likely",
+          "interpretation": "High stated willingness to intervene."
+        }
+      },
+      "crossChecks": [
+        "q6",
+        "q8"
+      ],
+      "analysisCaveat": "A stated intention, not observed behaviour; the survey does not ask why some would stay silent."
+    },
+    {
+      "id": "q10",
+      "section": "Do campus rules and messages reach students?",
+      "construct": "Prior awareness of campus fines",
+      "options": {
+        "a": {
+          "label": "Yes, I knew about both",
+          "interpretation": "Reported awareness, not proof of understanding or effectiveness."
+        },
+        "b": {
+          "label": "I knew about one of these, but not the other",
+          "interpretation": "Partial awareness may point to incomplete or unclear communication."
+        },
+        "c": {
+          "label": "No, I did not know about either",
+          "interpretation": "Rules may not be reaching many respondents."
+        }
+      },
+      "crossChecks": [
+        "q11",
+        "q12",
+        "q16",
+        "q18"
+      ],
+      "analysisCaveat": "Reported awareness only; does not show enforcement works or that fines change behaviour. Verify the real rule wording with the institution."
+    },
+    {
+      "id": "q11",
+      "section": "Do campus rules and messages reach students?",
+      "construct": "Communication funnel: exposure, recall and actionability",
+      "options": {
+        "a": {
+          "label": "I have not noticed any",
+          "interpretation": "No reported exposure; placement, salience or reach may be limiting."
+        },
+        "b": {
+          "label": "I noticed some, but cannot recall what they asked me to do",
+          "interpretation": "Exposure without recall; messages may not be memorable or actionable."
+        },
+        "c": {
+          "label": "I recall a message and roughly what it asked",
+          "interpretation": "Recall without full actionability."
+        },
+        "d": {
+          "label": "I recall a message and knew what to do and where",
+          "interpretation": "Recall and reported actionability; recall does not prove behaviour change."
+        }
+      },
+      "crossChecks": [
+        "q10",
+        "q12",
+        "q13",
+        "q17",
+        "q18"
+      ],
+      "analysisCaveat": "Each stage is respondent-reported; this does not audit how often or where the college actually communicates."
+    },
+    {
+      "id": "q12",
+      "section": "Do campus rules and messages reach students?",
+      "construct": "Perceived practical guidance received",
+      "options": {
+        "a": {
+          "label": "Little or none",
+          "interpretation": "May indicate an education or communication gap."
+        },
+        "b": {
+          "label": "Some guidance, but not enough to feel consistent or practical",
+          "interpretation": "Guidance may be too abstract, occasional or disconnected from disposal points."
+        },
+        "c": {
+          "label": "Enough practical guidance to understand what I should do",
+          "interpretation": "Perceived adequacy; check against q13 and the real campus streams."
+        }
+      },
+      "crossChecks": [
+        "q11",
+        "q13",
+        "q15",
+        "q16"
+      ],
+      "analysisCaveat": "Reported guidance, not a test of actual knowledge."
+    },
+    {
+      "id": "q13",
+      "section": "Do campus rules and messages reach students?",
+      "construct": "Self-reported confidence separating common waste",
+      "options": {
+        "a": {
+          "label": "Not confident; I am unsure how to separate them correctly",
+          "interpretation": "Practical, item-specific guidance may help; confidence is not accuracy."
+        },
+        "b": {
+          "label": "Somewhat confident, but unsure about at least one item",
+          "interpretation": "Targeted guidance on confusing items may be useful."
+        },
+        "c": {
+          "label": "Confident that I know how to separate all three",
+          "interpretation": "High self-reported confidence; actual sorting accuracy remains untested."
+        }
+      },
+      "crossChecks": [
+        "q5",
+        "q11",
+        "q12",
+        "q15",
+        "q16"
+      ],
+      "analysisCaveat": "Confidence, not knowledge; the survey contains no verified answer key for the campus streams."
+    },
+    {
+      "id": "q15",
+      "section": "What could help, and what to test next",
+      "construct": "Perceived primary barrier",
+      "options": {
+        "a": {
+          "label": "Bins are missing, full or unclear",
+          "interpretation": "Infrastructure is named as the main obstacle; verify with an audit."
+        },
+        "b": {
+          "label": "Students lack awareness or guidance",
+          "interpretation": "Knowledge/guidance is named as the main obstacle."
+        },
+        "c": {
+          "label": "Poor habits / social norms",
+          "interpretation": "Norms/habits are named as the main obstacle."
+        },
+        "d": {
+          "label": "No single obstacle stands out",
+          "interpretation": "The respondent does not single out one barrier; not proof there is no problem."
+        },
+        "e": {
+          "label": "Not sure",
+          "interpretation": "No formed view; not evidence of no problem."
+        }
+      },
+      "crossChecks": [
+        "q3",
+        "q4",
+        "q5",
+        "q12",
+        "q16"
+      ],
+      "analysisCaveat": "A single perceived barrier; the wording no longer bundles infrastructure problems or reads as a non-answer."
+    },
+    {
+      "id": "q16",
+      "section": "What could help, and what to test next",
+      "construct": "Preferred practical improvement",
+      "options": {
+        "a": {
+          "label": "Better bins, placement and labels",
+          "interpretation": "Infrastructure and clear sorting cues are preferred."
+        },
+        "b": {
+          "label": "Clear, practical sorting guidance",
+          "interpretation": "Practical education is preferred over broad awareness messaging."
+        },
+        "c": {
+          "label": "Visible peer-led habits and activities",
+          "interpretation": "A voluntary peer-led pilot may be worth testing."
+        },
+        "d": {
+          "label": "Stricter enforcement of the rules",
+          "interpretation": "Enforcement is preferred; verify the real rules and how they are applied before acting."
+        }
+      },
+      "crossChecks": [
+        "q15",
+        "q17",
+        "q18",
+        "q19"
+      ],
+      "analysisCaveat": "A preference and a hypothesis, not evidence of what is effective or affordable."
+    },
+    {
+      "id": "q17",
+      "section": "What could help, and what to test next",
+      "construct": "Preferred campaign channel",
+      "options": {
+        "a": {
+          "label": "Short videos / social posts",
+          "interpretation": "A digital short-form pilot may be worth testing."
+        },
+        "b": {
+          "label": "Posters and signs near bins",
+          "interpretation": "Point-of-decision prompts may be worth testing."
+        },
+        "c": {
+          "label": "Live demonstrations or events",
+          "interpretation": "Interactive formats may appeal; evaluate access, cost and participation."
+        },
+        "d": {
+          "label": "Class announcements",
+          "interpretation": "An institutional channel may be worth testing."
+        }
+      },
+      "crossChecks": [
+        "q11",
+        "q16",
+        "q18",
+        "q19"
+      ],
+      "analysisCaveat": "Preferred channel is a hypothesis, not a measured effective channel."
+    },
+    {
+      "id": "q18",
+      "section": "What could help, and what to test next",
+      "construct": "Preferred message frame",
+      "options": {
+        "a": {
+          "label": "Keep campus clean for everyone",
+          "interpretation": "Shared-space, collective-benefit messaging may resonate."
+        },
+        "b": {
+          "label": "Here is exactly what goes where",
+          "interpretation": "Specific practical instructions may be more useful than broad appeals."
+        },
+        "c": {
+          "label": "Here are the rules and penalties",
+          "interpretation": "Rule-based messaging may resonate; verify policy wording and pair it with accessible bins."
+        },
+        "d": {
+          "label": "Your classmates are doing it",
+          "interpretation": "A social-norm frame may resonate; avoid shaming or exaggeration."
+        }
+      },
+      "crossChecks": [
+        "q10",
+        "q11",
+        "q16",
+        "q17",
+        "q19"
+      ],
+      "analysisCaveat": "A preference, not proof the message would change behaviour."
+    },
+    {
+      "id": "q19",
+      "section": "What could help, and what to test next",
+      "construct": "Concrete participation considered (intention)",
+      "options": {
+        "a": {
+          "label": "Nothing at the moment",
+          "interpretation": "No participation intended; reasons were not asked."
+        },
+        "b": {
+          "label": "Share or repost a message",
+          "interpretation": "A low-effort online form of participation."
+        },
+        "c": {
+          "label": "Join a short one-off campus activity",
+          "interpretation": "Interest in a bounded, low-commitment activity."
+        },
+        "d": {
+          "label": "Help run an activity or team",
+          "interpretation": "Interest in a larger voluntary role; confirm with sign-ups."
+        }
+      },
+      "crossChecks": [
+        "q16",
+        "q17",
+        "q18"
+      ],
+      "analysisCaveat": "Stated willingness, not actual sign-up or attendance."
+    }
+  ],
+  "sectionAnalysis": [
+    {
+      "id": "conditions",
+      "label": "Campus conditions and convenience",
+      "questions": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5"
+      ],
+      "purpose": "Describe reported visibility of improper disposal, perceived hotspots, and reported bin access, overflow and label clarity.",
+      "patterns": [
+        {
+          "id": "high_reported_visibility",
+          "when": "q1 option d or e is common",
+          "meaning": "Respondents frequently report encountering improper disposal; pair with q2 to identify perceived hotspots.",
+          "actions": [
+            "Check hotspots directly at busy and quiet times",
+            "Audit bins in the leading perceived area"
+          ]
+        },
+        {
+          "id": "bin_access_barrier",
+          "when": "q3 option a or b is common",
+          "meaning": "Many respondents report that a bin is rarely or never available and easy to reach.",
+          "actions": [
+            "Audit bin placement and access in the perceived hotspots",
+            "Distinguish missing bins from hard-to-reach ones before spending"
+          ]
+        },
+        {
+          "id": "bin_capacity_barrier",
+          "when": "q4 option d or e is common",
+          "meaning": "Many respondents report that bins are often or always full or not emptied often enough.",
+          "actions": [
+            "Review collection frequency and capacity at peak times",
+            "Check overflow at the leading perceived hotspot"
+          ]
+        },
+        {
+          "id": "label_unclear",
+          "when": "q5 option c or d is common",
+          "meaning": "Respondents report that bin labels are unclear or absent where they use bins.",
+          "actions": [
+            "Audit label presence and legibility",
+            "Confirm labels match the real campus waste streams before relabelling"
+          ]
+        },
+        {
+          "id": "convenience_barrier",
+          "when": "q7 option a is common and (q3 option a/b or q4 option d/e is common)",
+          "meaning": "Reported littering near bins coincides with reported access or capacity problems.",
+          "actions": [
+            "Audit bin access, capacity, placement and labels",
+            "Pilot a targeted improvement at one hotspot"
+          ]
+        }
+      ],
+      "cautions": [
+        "Survey reports are not a campus waste audit.",
+        "q2 identifies broad perceived areas, not exact locations.",
+        "'Not sure' answers in q3/q4/q5 are not evidence of a problem or of its absence."
+      ]
+    },
+    {
+      "id": "attitudes-norms",
+      "label": "Attitudes, norms and reported behaviour",
+      "questions": [
+        "q6",
+        "q7",
+        "q8",
+        "q9"
+      ],
+      "purpose": "Describe personal attitude to littering, reported usual behaviour, perceived peer norms and stated willingness to intervene — kept as separate constructs.",
+      "patterns": [
+        {
+          "id": "disapproval_norm_gap",
+          "when": "q6 option c is common and q8 option a or b is common",
+          "meaning": "Respondents disapprove of littering but believe few classmates dispose properly — an attitude/norm gap.",
+          "actions": [
+            "Test visible peer-modelling rather than blaming language",
+            "Measure whether a norm message changes perceived norms over time"
+          ]
+        },
+        {
+          "id": "intervention_gap",
+          "when": "q9 options a+b exceed q9 options d+e",
+          "meaning": "More respondents are unlikely to intervene than likely; the survey does not ask why.",
+          "actions": [
+            "Offer respectful, non-confrontational ways to prompt peers",
+            "Avoid public shaming"
+          ]
+        }
+      ],
+      "cautions": [
+        "Attitudes and intentions are self-reported, not observed behaviour.",
+        "Social-desirability bias is likely; treat 'good' answers cautiously.",
+        "q9 does not ask why some would stay silent, so reasons cannot be assumed."
+      ]
+    },
+    {
+      "id": "communication-reach",
+      "label": "Do campus rules and messages reach students?",
+      "questions": [
+        "q10",
+        "q11",
+        "q12",
+        "q13"
+      ],
+      "purpose": "Assess reported awareness of rules, the communication funnel (exposure, recall, actionability), practical guidance and sorting confidence.",
+      "patterns": [
+        {
+          "id": "awareness_gap",
+          "when": "q10 option c is common",
+          "meaning": "Many respondents report being unaware of the campus fines before the survey.",
+          "actions": [
+            "Check that the rules are accurate, clearly worded and easy to find",
+            "Pair rule communication with convenient disposal"
+          ]
+        },
+        {
+          "id": "funnel_recall_gap",
+          "when": "q11 option a or b is common",
+          "meaning": "Messages are reported as not noticed, or noticed without recall — a reach or recall gap.",
+          "actions": [
+            "Choose one concrete call-to-action and place it near disposal decisions",
+            "Measure recall after a campaign, not the number of posters"
+          ]
+        },
+        {
+          "id": "guidance_gap",
+          "when": "q12 option a or b is common and q13 option a or b is common",
+          "meaning": "Reported practical guidance and sorting confidence are both low.",
+          "actions": [
+            "Run a short practical demonstration",
+            "Use consistent, item-specific labels once the campus streams are verified"
+          ]
+        }
+      ],
+      "cautions": [
+        "Recall and comprehension are respondent-reported, not an audit of communication frequency or placement.",
+        "Confidence is not knowledge, and the survey contains no verified sorting answer key.",
+        "Do not infer the college is doing enough or too little from a single question."
+      ]
+    },
+    {
+      "id": "change-preferences",
+      "label": "What could help, and what to test next",
+      "questions": [
+        "q15",
+        "q16",
+        "q17",
+        "q18",
+        "q19"
+      ],
+      "purpose": "Identify perceived barriers, preferred practical improvements, channels and messages, and concrete participation intentions.",
+      "patterns": [
+        {
+          "id": "infrastructure_first",
+          "when": "q15 option a or q16 option a is prominent",
+          "meaning": "Respondents repeatedly prioritise bins, placement and labels.",
+          "actions": [
+            "Audit bins and collection schedules",
+            "Prioritise the leading perceived hotspot",
+            "Pair infrastructure with clear instructions"
+          ]
+        },
+        {
+          "id": "education_first",
+          "when": "q15 option b or q16 option b is prominent, with q12/q13 uncertainty",
+          "meaning": "Responses point toward practical education and guidance.",
+          "actions": [
+            "Run a short practical demonstration",
+            "Use clear item-specific visuals and check understanding"
+          ]
+        },
+        {
+          "id": "norms_first",
+          "when": "q15 option c or q16 option c is prominent",
+          "meaning": "Responses point toward norms and visible peer-led habits.",
+          "actions": [
+            "Run a small voluntary peer-led activity",
+            "Make correct disposal visible without shaming"
+          ]
+        },
+        {
+          "id": "enforcement_preference",
+          "when": "q16 option d is prominent",
+          "meaning": "A notable share prefer stricter enforcement; this states a preference, not that enforcement works.",
+          "actions": [
+            "Verify the actual rules, penalties and how they are applied before acting",
+            "Avoid leaning on enforcement alone if bins are inaccessible"
+          ]
+        },
+        {
+          "id": "channel_message_match",
+          "when": "q17 and q18 each have a clear leading option",
+          "meaning": "A preferred channel and message can be piloted as a hypothesis, not a proven combination.",
+          "actions": [
+            "Pilot the combination",
+            "Track reach, recall and outcomes separately"
+          ]
+        },
+        {
+          "id": "student_led_opportunity",
+          "when": "q16 option c or q19 option c/d is prominent",
+          "meaning": "There may be an opening for a voluntary student-led pilot.",
+          "actions": [
+            "Invite volunteers with a specific, low-effort ask",
+            "Track sign-ups and actual attendance"
+          ]
+        }
+      ],
+      "cautions": [
+        "Preferred intervention is not necessarily the most effective or affordable.",
+        "Stated willingness is not actual participation.",
+        "Preferences are hypotheses, not evidence of effectiveness."
+      ]
+    }
+  ],
+  "overallSynthesis": {
+    "dimensions": [
+      {
+        "id": "problem_visibility",
+        "inputs": [
+          "q1",
+          "q2"
+        ],
+        "meaning": "How often respondents report seeing problems and which broad areas they name."
+      },
+      {
+        "id": "infrastructure",
+        "inputs": [
+          "q3",
+          "q4",
+          "q5",
+          "q7",
+          "q15",
+          "q16"
+        ],
+        "meaning": "Whether access, capacity, labels or placement recur across answers."
+      },
+      {
+        "id": "attitudes_and_norms",
+        "inputs": [
+          "q6",
+          "q8",
+          "q9"
+        ],
+        "meaning": "Whether disapproval, perceived peer norms and willingness to intervene point the same way."
+      },
+      {
+        "id": "communication_and_knowledge",
+        "inputs": [
+          "q10",
+          "q11",
+          "q12",
+          "q13"
+        ],
+        "meaning": "Whether rules and messages are noticed/remembered and whether guidance and confidence feel adequate."
+      },
+      {
+        "id": "preferences_and_engagement",
+        "inputs": [
+          "q16",
+          "q17",
+          "q18",
+          "q19"
+        ],
+        "meaning": "Which improvements, channels, messages and participation forms respondents favour."
+      }
+    ],
+    "synthesisRules": [
+      {
+        "id": "combined_infrastructure_guidance",
+        "when": "an infrastructure barrier and the practical guidance gap both appear",
+        "summary": "A combined approach may be warranted: make correct disposal convenient and provide clear instructions at the point of disposal.",
+        "priority": [
+          "Audit bins",
+          "Standardize labels",
+          "Pilot practical guidance"
+        ]
+      },
+      {
+        "id": "communication_reach",
+        "when": "the funnel recall gap or the awareness gap appears",
+        "summary": "Test message visibility, recall and clarity before simply producing more posters.",
+        "priority": [
+          "Choose one action-focused message",
+          "Place it near disposal decisions",
+          "Measure recall"
+        ]
+      },
+      {
+        "id": "student_led_pilot",
+        "when": "the student-led opportunity appears",
+        "summary": "Try a small voluntary student-led pilot; confirm interest through actual sign-ups and attendance.",
+        "priority": [
+          "Recruit volunteers",
+          "Run one limited activity",
+          "Collect feedback"
+        ]
+      },
+      {
+        "id": "mixed_signal",
+        "when": "no rule has enough support or leading options are closely split",
+        "summary": "Do not force a single conclusion. Report the split and consider a low-cost combined pilot or further targeted observation.",
+        "priority": [
+          "Report uncertainty",
+          "Observe locations directly",
+          "Test small alternatives"
+        ]
+      }
+    ],
+    "reportSections": [
+      "Response count and collection period",
+      "Programme/course breakdown with small-group suppression",
+      "Campus conditions and convenience",
+      "Attitudes, norms and reported behaviour",
+      "Do campus rules and messages reach students?",
+      "What could help, and what to test next",
+      "Cross-question patterns",
+      "What students can do",
+      "What college administration can do",
+      "What TheGreenFeed can pilot next",
+      "Limitations"
+    ]
+  },
+  "actionLibrary": {
+    "students": [
+      {
+        "id": "responsible_disposal",
+        "action": "Use an appropriate bin where available; when practical, keep waste until a suitable disposal point is found.",
+        "signals": [
+          "q7 option b/c/d is common"
+        ],
+        "caveat": "Do not place all responsibility on students if bins are inaccessible, full or unclear."
+      },
+      {
+        "id": "respectful_peer_prompt",
+        "action": "Use polite, non-confrontational reminders or join voluntary activities.",
+        "signals": [
+          "q9 option d/e prominent",
+          "q19 option b/c/d prominent"
+        ],
+        "caveat": "Avoid confrontation and public shaming."
+      }
+    ],
+    "college": [
+      {
+        "id": "bin_audit",
+        "action": "Audit placement, capacity, overflow, labels and collection schedules in perceived hotspots.",
+        "signals": [
+          "q2 clear leading area",
+          "q3 option a/b common",
+          "q4 option d/e common",
+          "q5 option c/d common"
+        ],
+        "caveat": "Validate perceptions with observation before costly changes."
+      },
+      {
+        "id": "sorting_guidance",
+        "action": "Provide consistent, item-specific labels and demonstrations that match actual campus waste handling.",
+        "signals": [
+          "q12 option a/b common",
+          "q13 option a/b common",
+          "q16 option b prominent"
+        ],
+        "caveat": "Confirm local collection rules before publishing sorting guidance."
+      },
+      {
+        "id": "rule_clarity",
+        "action": "Make current waste rules accurate, clear and easy to find; verify any penalty wording before communicating it.",
+        "signals": [
+          "q10 option c common",
+          "q11 option a/b common"
+        ],
+        "caveat": "Confirm wording with the institution."
+      }
+    ],
+    "thegreenfeed": [
+      {
+        "id": "message_pilot",
+        "action": "Pilot one clear message through the leading preferred channel and measure recall.",
+        "signals": [
+          "q17/q18 have clear leading options",
+          "q11 option b common"
+        ],
+        "caveat": "Preference and recall do not prove behaviour change."
+      },
+      {
+        "id": "student_activity",
+        "action": "Run a small voluntary activity and track sign-ups, attendance and feedback.",
+        "signals": [
+          "q16 option c prominent",
+          "q19 option c/d prominent"
+        ],
+        "caveat": "Do not infer attendance from stated willingness."
+      },
+      {
+        "id": "follow_up",
+        "action": "Repeat a short measurement after a pilot and add direct observation where possible.",
+        "signals": [
+          "an intervention has been piloted"
+        ],
+        "caveat": "Without a suitable comparison design, changes cannot be attributed solely to the campaign."
+      }
+    ]
+  },
+  "adminDashboard": {
+    "metrics": [
+      "Total submissions",
+      "Submissions over time",
+      "Programme/course counts",
+      "Option counts and percentages per question",
+      "Section summaries",
+      "Cross-question patterns",
+      "Triggered recommendations",
+      "Sample-size/data-quality warnings"
+    ],
+    "exports": [
+      {
+        "id": "raw_xlsx",
+        "label": "Raw responses (.xlsx)",
+        "contains": [
+          "timestamp",
+          "response id",
+          "profile fields",
+          "all answers"
+        ],
+        "access": "admin only",
+        "sensitive": true
+      },
+      {
+        "id": "analysis_xlsx",
+        "label": "Aggregated analysis (.xlsx)",
+        "contains": [
+          "counts",
+          "percentages",
+          "section summaries",
+          "recommendations",
+          "limitations"
+        ],
+        "access": "admin only",
+        "sensitive": false
+      },
+      {
+        "id": "analysis_json",
+        "label": "Analysis framework (.json)",
+        "contains": [
+          "versioned rules and interpretations"
+        ],
+        "access": "maintainer"
+      }
+    ]
+  },
+  "limitations": [
+    "This is deterministic descriptive analysis, not a validated psychometric instrument or causal model.",
+    "The questionnaire only supports interpretations its wording/options reasonably allow; do not invent unasked reasons.",
+    "Recall, social desirability, selection bias and uneven participation can affect results.",
+    "Respondents are not automatically representative of all PCTE students.",
+    "Report what a pattern is consistent with, not what it proves.",
+    "Claims of improvement require follow-up measurements and preferably direct observation.",
+    "Programme-level comparisons can mislead when group sizes differ or are very small.",
+    "Sorting confidence is not sorting knowledge; the survey contains no verified answer key.",
+    "The v4 instrument collects different questions from v3; the two versions must never be merged into one distribution."
+  ]
+}

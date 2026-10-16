@@ -6,6 +6,8 @@ import {
   SMALL_GROUP_THRESHOLD,
 } from "@/lib/admin/data";
 import { toCsv, withBom, type CsvCell } from "@/lib/admin/csv";
+import { toIsoUtc } from "@/lib/admin/format";
+import { SYNTHETIC_EXCLUDED_NOTE } from "@/data/survey-questions";
 import { buildAnalysis } from "@/lib/analysis";
 
 /**
@@ -43,8 +45,25 @@ export async function GET() {
     "instrument_versions",
     analysis.dataQuality.versions.map((v) => `${v.version} (${v.count})`).join("; "),
   ]);
-  lines.push(["period_start", analysis.dataQuality.periodStart ?? ""]);
-  lines.push(["period_end", analysis.dataQuality.periodEnd ?? ""]);
+  lines.push(["analysed_version", analysis.dataQuality.analysedVersion]);
+  lines.push([
+    "excluded_versions",
+    analysis.dataQuality.excludedVersions
+      .map((v) => `${v.version} (${v.count})`)
+      .join("; "),
+  ]);
+  lines.push([
+    "unsupported_versions",
+    analysis.dataQuality.unsupportedVersions
+      .map((v) => `${v.version} (${v.count})`)
+      .join("; "),
+  ]);
+  lines.push([
+    "synthetic_rows",
+    `excluded — ${SYNTHETIC_EXCLUDED_NOTE}`,
+  ]);
+  lines.push(["period_start", toIsoUtc(analysis.dataQuality.periodStart)]);
+  lines.push(["period_end", toIsoUtc(analysis.dataQuality.periodEnd)]);
   lines.push(["small_group_threshold", SMALL_GROUP_THRESHOLD]);
   lines.push(["sample_warning", analysis.dataQuality.sampleWarning ?? ""]);
   lines.push([]);
