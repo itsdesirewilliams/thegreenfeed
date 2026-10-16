@@ -4,7 +4,16 @@ import { SiteHeader } from "@/components/site/header";
 import { SiteFooter } from "@/components/site/footer";
 import "./globals.css";
 
+/**
+ * Canonical production origin for absolute URLs in metadata (Open Graph and
+ * Twitter images). Override with NEXT_PUBLIC_SITE_URL when the domain changes;
+ * the default is the confirmed Vercel production URL.
+ */
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://thegreenfeed-p385.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "TheGreenFeed — Less Waste. More Impact.",
     template: "%s · TheGreenFeed",

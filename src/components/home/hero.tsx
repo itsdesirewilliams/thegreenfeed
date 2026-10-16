@@ -1,14 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/site/container";
 
 export function HomeHero() {
   return (
     <section className="bg-cream">
       <Container className="grid items-center gap-12 py-14 sm:py-18 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:py-24">
-        <div className="flex flex-col items-start gap-7">
+        <div className="flex min-w-0 flex-col items-start gap-7">
           <h1 className="text-display font-semibold text-forest">
             Less waste.
             <br />
@@ -25,26 +25,26 @@ export function HomeHero() {
             reuse, and recycle — and keep your campus and community cleaner.
           </p>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <Button
-              render={<Link href="/blog" />}
+            <ButtonLink
+              href="/blog"
               size="lg"
               className="h-12 px-6 text-base"
             >
               Explore the guides
               <ArrowRight aria-hidden="true" />
-            </Button>
-            <Button
-              render={<Link href="/survey" />}
+            </ButtonLink>
+            <ButtonLink
+              href="/survey"
               variant="outline"
               size="lg"
               className="h-12 px-6 text-base"
             >
               Take the survey
-            </Button>
+            </ButtonLink>
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative min-w-0">
           <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl ring-1 ring-forest/10">
             <Image
               src="/images/campaign/greenfeed-1.png"
@@ -55,7 +55,7 @@ export function HomeHero() {
               className="object-cover"
             />
           </div>
-          <div className="relative z-10 mx-6 -mt-14 flex items-center gap-4 rounded-2xl bg-white p-4 shadow-card ring-1 ring-forest/10 sm:mx-8">
+          <div className="relative z-10 mx-5 -mt-14 flex items-center gap-4 rounded-2xl bg-white p-4 shadow-card ring-1 ring-forest/10 sm:mx-8">
             <span
               aria-hidden="true"
               className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-lime/30 font-semibold text-forest"
@@ -63,7 +63,7 @@ export function HomeHero() {
               3R
             </span>
             <div className="flex min-w-0 flex-col gap-0.5">
-              <p className="truncate text-sm font-semibold text-forest">
+              <p className="text-sm font-semibold text-forest">
                 Reduce · Reuse · Recycle
               </p>
               <p className="text-sm text-muted-ink">

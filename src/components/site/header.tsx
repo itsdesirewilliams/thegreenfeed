@@ -11,22 +11,28 @@ export function SiteHeader() {
       <Container className="flex h-16 items-center justify-between gap-4">
         <Link
           href="/"
+          aria-label="TheGreenFeed home"
           className="text-2xl font-semibold tracking-tight leading-none text-forest focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-forest"
         >
           TheGreenFeed
         </Link>
 
         <div className="flex items-center gap-2">
-          <NavLinks className="hidden md:flex" />
-          <Link
-            href={SITE.instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="TheGreenFeed on Instagram"
-            className="hidden size-9 items-center justify-center rounded-full text-forest transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest md:inline-flex"
+          <nav
+            aria-label="Main"
+            className="hidden items-center gap-2 md:flex"
           >
-            <InstagramIcon className="size-5" />
-          </Link>
+            <NavLinks className="flex" />
+            <Link
+              href={SITE.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TheGreenFeed on Instagram"
+              className="inline-flex size-9 items-center justify-center rounded-full text-forest transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+            >
+              <InstagramIcon className="size-5" />
+            </Link>
+          </nav>
           <MobileNav />
         </div>
       </Container>

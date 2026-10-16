@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Container } from "@/components/site/container";
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Page not found",
@@ -23,17 +22,17 @@ export default function NotFound() {
           browse the guides.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button render={<Link href="/" />} size="lg" className="h-11 px-5">
+          <ButtonLink href="/" size="lg" className="h-11 px-5">
             Back to home
-          </Button>
-          <Button
-            render={<Link href="/blog" />}
+          </ButtonLink>
+          <ButtonLink
+            href="/blog"
             variant="outline"
             size="lg"
             className="h-11 px-5"
           >
             Browse the guides
-          </Button>
+          </ButtonLink>
         </div>
       </Container>
     </main>

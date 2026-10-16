@@ -1,12 +1,15 @@
 /**
- * TheGreenFeed — approved 16-question waste-management research survey
- * (PR awareness project targeting PCTE Group of Institutes students).
+ * TheGreenFeed — approved 16-question campus waste-management survey
+ * (PR for Change — Waste Management at PCTE Group of Institutes).
  *
- * The wording and the three answer options per question are approved content:
- * do not rewrite them, and do not invent a scoring system. Option values are
- * the canonical letters "a" / "b" / "c" (they match the questionnaire codes);
- * the human-readable labels live here and act as the codebook for later
- * aggregate analysis.
+ * SOURCE OF TRUTH: `TheGreenFeed_16_Question_Survey.md` (version v2).
+ * Every question and option below is transcribed from that document exactly —
+ * do not reword, reorder, or invent questions or options.
+ *
+ * Option values are the canonical letters "a" / "b" / "c" (they match the
+ * questionnaire codes); the human-readable labels act as the codebook for
+ * later aggregate analysis. Treat responses as categorical data; never sum
+ * them into a single score or claim causal effects from self-reports.
  *
  * `SURVEY_PUBLISHED` stays `false` until the owner has reviewed the complete
  * experience, a verified test submission exists in Supabase, and publication
@@ -46,9 +49,21 @@ export type SurveyQuestion = {
 };
 
 export const SURVEY_SECTIONS = [
-  { number: 1, title: "The reality" },
-  { number: 2, title: "What reaches you?" },
-  { number: 3, title: "Make the change" },
+  {
+    number: 1,
+    title: "The Reality",
+    subtitle: "What do students actually experience on campus?",
+  },
+  {
+    number: 2,
+    title: "What Reaches You?",
+    subtitle: "Do campus rules, messages and education actually reach students?",
+  },
+  {
+    number: 3,
+    title: "Make the Change",
+    subtitle: "What would help students act, and what should the campaign do next?",
+  },
 ] as const;
 
 export const surveyQuestions: SurveyQuestion[] = [
@@ -57,14 +72,14 @@ export const surveyQuestions: SurveyQuestion[] = [
     id: "q1",
     type: "single-choice",
     label:
-      "How often do you notice litter or improperly disposed waste in the areas of PCTE you regularly use?",
+      "How often do you notice litter or waste being disposed of improperly in the areas of PCTE you regularly use?",
     required: true,
     options: [
       { value: "a", label: "Rarely or never" },
       { value: "b", label: "Sometimes" },
       { value: "c", label: "Often or very often" },
     ],
-    section: "The reality",
+    section: "The Reality",
   },
   {
     id: "q2",
@@ -72,39 +87,46 @@ export const surveyQuestions: SurveyQuestion[] = [
     label: "Where do you most often notice waste-management problems on campus?",
     required: true,
     options: [
-      { value: "a", label: "Canteens, food areas, or gathering spots" },
-      { value: "b", label: "Classrooms, corridors, or common areas" },
+      { value: "a", label: "Canteens, food areas or student gathering spots" },
+      { value: "b", label: "Classrooms, corridors or other shared indoor areas" },
       {
         value: "c",
-        label: "I rarely notice a problem, or I notice it elsewhere",
+        label: "Outdoor areas, pathways or other places around campus",
       },
     ],
-    section: "The reality",
+    section: "The Reality",
   },
   {
     id: "q3",
     type: "single-choice",
     label:
-      "If the nearest bin is overflowing or its purpose is unclear, what would you most likely do?",
+      "If the nearest bin is full, difficult to find or has unclear labels, what are you most likely to do?",
     required: true,
     options: [
-      { value: "a", label: "Use it anyway or leave my waste nearby" },
-      { value: "b", label: "Look for another bin if one is convenient" },
-      { value: "c", label: "Keep my waste until I find a suitable place" },
+      { value: "a", label: "Use the nearest bin or leave the waste nearby" },
+      { value: "b", label: "Look for another bin if one is reasonably close" },
+      {
+        value: "c",
+        label: "Keep the waste with me until I find a suitable place to dispose of it",
+      },
     ],
-    section: "The reality",
+    section: "The Reality",
   },
   {
     id: "q4",
     type: "single-choice",
-    label: "If you see another student littering, what are you most likely to do?",
+    label:
+      "If you see another student littering, what are you most likely to do?",
     required: true,
     options: [
       { value: "a", label: "Usually ignore it" },
-      { value: "b", label: "Disapprove but usually say nothing" },
-      { value: "c", label: "Politely speak up or encourage proper disposal" },
+      { value: "b", label: "Feel uncomfortable but usually say nothing" },
+      {
+        value: "c",
+        label: "Politely speak up or encourage them to dispose of it properly",
+      },
     ],
-    section: "The reality",
+    section: "The Reality",
   },
 
   // SECTION 2 — WHAT REACHES YOU?
@@ -112,169 +134,233 @@ export const surveyQuestions: SurveyQuestion[] = [
     id: "q5",
     type: "single-choice",
     label:
-      "Before taking this survey, did you know PCTE imposes fines for littering or being found with chewing gum?",
+      "Before taking this survey, did you know that PCTE imposes fines for littering and for being found with chewing gum?",
     required: true,
     options: [
-      { value: "a", label: "No, I wasn't aware of this" },
-      { value: "b", label: "I'd heard about it but wasn't sure of the details" },
-      { value: "c", label: "Yes, I knew about it" },
+      { value: "a", label: "Yes, I knew about both" },
+      { value: "b", label: "I knew about one of these, but not the other" },
+      { value: "c", label: "No, I did not know about either" },
     ],
-    section: "What reaches you?",
+    section: "What Reaches You?",
   },
   {
     id: "q6",
     type: "single-choice",
-    label:
-      "Before this survey, how often did you notice environmental or waste-management posters in PCTE corridors?",
+    label: "How much do these fines influence your own behaviour on campus?",
     required: true,
+    /**
+     * Analysis note (from the source document): measures students' reported
+     * awareness and perceived influence — not proof that fines cause a change
+     * in behaviour.
+     */
     options: [
-      { value: "a", label: "Rarely or never" },
-      { value: "b", label: "Sometimes, but I rarely remember the message" },
-      { value: "c", label: "Often, and I can recall what they communicate" },
+      { value: "a", label: "I was not aware of these fines before this survey" },
+      {
+        value: "b",
+        label:
+          "I know about them, but they have little or no influence on my behaviour",
+      },
+      {
+        value: "c",
+        label:
+          "They make me more careful about littering or chewing gum on campus",
+      },
     ],
-    section: "What reaches you?",
+    section: "What Reaches You?",
   },
   {
     id: "q7",
     type: "single-choice",
     label:
-      "Before this survey, were you aware that Fashion Department runwalks have featured messages about waste management or other social causes?",
+      "How often do you notice or remember waste-management messages on campus, such as posters displayed in corridors?",
     required: true,
     options: [
-      { value: "a", label: "No, I wasn't aware of those messages" },
-      { value: "b", label: "I knew about the events, but not their messages" },
-      { value: "c", label: "Yes, I was aware of the messages" },
+      { value: "a", label: "I rarely or never notice them" },
+      {
+        value: "b",
+        label: "I sometimes notice posters, but rarely remember what they say",
+      },
+      { value: "c", label: "I notice them and can remember at least one message" },
     ],
-    section: "What reaches you?",
+    section: "What Reaches You?",
   },
   {
     id: "q8",
     type: "single-choice",
     label:
-      "How much practical guidance has PCTE provided about sorting, recycling, and disposing of waste correctly?",
+      "Have you noticed or do you remember environmental or waste-management messages shared through Fashion Department runwalks or similar campus events?",
     required: true,
     options: [
-      { value: "a", label: "Little or none that I can recall" },
-      { value: "b", label: "Some guidance, but not enough to feel confident" },
-      { value: "c", label: "Enough practical guidance to know what to do" },
+      {
+        value: "a",
+        label: "I have not noticed these events or their environmental messages",
+      },
+      {
+        value: "b",
+        label:
+          "I have noticed the event, but do not remember an environmental or waste-management message",
+      },
+      {
+        value: "c",
+        label:
+          "I remember seeing or hearing an environmental or waste-management message through one of these events",
+      },
     ],
-    section: "What reaches you?",
+    section: "What Reaches You?",
   },
   {
     id: "q9",
     type: "single-choice",
     label:
-      "How confident are you about what to do with a used plastic bottle, clean cardboard, and leftover food?",
+      "How much practical guidance have you received at PCTE about reducing waste, separating it, recycling it or disposing of it correctly?",
     required: true,
     options: [
-      { value: "a", label: "I'm unsure how to handle most of them" },
-      { value: "b", label: "I know what to do with some, but not all" },
-      { value: "c", label: "I know how to handle all three" },
+      { value: "a", label: "Little or none" },
+      {
+        value: "b",
+        label: "Some guidance, but not enough to feel consistent or practical",
+      },
+      {
+        value: "c",
+        label: "Enough practical guidance to understand what I should do",
+      },
     ],
-    section: "What reaches you?",
+    section: "What Reaches You?",
   },
   {
     id: "q10",
     type: "single-choice",
     label:
-      "If you wanted to know what happens to waste after it leaves a PCTE bin, would you know where to find that information?",
+      "How confident are you that you know how to separate common waste items, such as a plastic bottle, a clean cardboard box and leftover food?",
     required: true,
     options: [
-      { value: "a", label: "No, I wouldn't know where to look" },
-      { value: "b", label: "I might find it with some effort" },
-      { value: "c", label: "Yes, I know where to find it" },
+      {
+        value: "a",
+        label: "Not confident; I am unsure how to separate them correctly",
+      },
+      {
+        value: "b",
+        label: "Somewhat confident, but unsure about at least one item",
+      },
+      {
+        value: "c",
+        label: "Confident that I know how to separate all three",
+      },
     ],
-    section: "What reaches you?",
+    section: "What Reaches You?",
   },
 
   // SECTION 3 — MAKE THE CHANGE
   {
     id: "q11",
     type: "single-choice",
-    label:
-      "How much do PCTE's fines for littering or chewing gum influence your behaviour on campus?",
+    label: "What is the biggest obstacle to better waste management at PCTE?",
     required: true,
     options: [
-      { value: "a", label: "Little or not at all" },
-      { value: "b", label: "They make me more cautious in some situations" },
+      {
+        value: "a",
+        label: "Bins are hard to find, overflowing or not clearly labelled",
+      },
+      {
+        value: "b",
+        label: "Students lack awareness, motivation or clear guidance",
+      },
       {
         value: "c",
-        label: "They strongly influence me to avoid these behaviours",
+        label:
+          "Both seem manageable to me; neither stands out as the main obstacle",
       },
     ],
-    section: "Make the change",
+    section: "Make the Change",
   },
   {
     id: "q12",
     type: "single-choice",
-    label: "What is the biggest obstacle to better waste disposal at PCTE?",
+    label:
+      "Which change would make the biggest practical difference to waste management on campus?",
     required: true,
     options: [
-      { value: "a", label: "Bins, labels, or disposal facilities aren't adequate" },
+      {
+        value: "a",
+        label: "More accessible bins with clear labels showing what goes where",
+      },
       {
         value: "b",
-        label: "Students lack awareness, motivation, or consistent habits",
+        label: "Regular, practical demonstrations and easy-to-understand guidance",
       },
-      { value: "c", label: "Neither is a major obstacle, or I'm unsure" },
+      {
+        value: "c",
+        label:
+          "Student-led activities that make proper disposal a shared campus habit",
+      },
     ],
-    section: "Make the change",
+    section: "Make the Change",
   },
   {
     id: "q13",
     type: "single-choice",
-    label: "Which change would make the biggest practical difference at PCTE?",
+    label:
+      "Which format would most likely get you to notice and engage with a waste-management campaign?",
     required: true,
     options: [
-      { value: "a", label: "More accessible bins with clearer labels" },
-      { value: "b", label: "Practical education and demonstrations" },
-      { value: "c", label: "Student-led activities and peer involvement" },
+      { value: "a", label: "Short videos and social-media posts" },
+      { value: "b", label: "Clear, well-placed posters and signs around campus" },
+      { value: "c", label: "Live demonstrations, challenges or student events" },
     ],
-    section: "Make the change",
+    section: "Make the Change",
   },
   {
     id: "q14",
     type: "single-choice",
     label:
-      "Which format would most likely get your attention for a waste-management campaign?",
+      "Which message would most encourage you to dispose of waste responsibly on campus?",
     required: true,
     options: [
-      { value: "a", label: "Short videos and social media" },
-      { value: "b", label: "Posters and visible campus signage" },
+      { value: "a", label: "Make campus cleaner and more pleasant for everyone" },
+      { value: "b", label: "Show exactly how and where to dispose of common items" },
       {
         value: "c",
-        label: "Live demonstrations, challenges, and student events",
+        label:
+          "Explain the consequences of littering and the rules that apply on campus",
       },
     ],
-    section: "Make the change",
+    section: "Make the Change",
   },
   {
     id: "q15",
     type: "single-choice",
     label:
-      "What would most encourage you to dispose of waste responsibly, even when nobody is watching?",
+      "What would make it easiest for you to dispose of waste correctly every day at PCTE?",
     required: true,
     options: [
-      { value: "a", label: "Clear instructions and convenient facilities" },
-      { value: "b", label: "Seeing friends and classmates do it" },
+      {
+        value: "a",
+        label: "Convenient bins with clear labels wherever students need them",
+      },
+      {
+        value: "b",
+        label: "Simple reminders and practical instructions at the point of disposal",
+      },
       {
         value: "c",
-        label: "Understanding the environmental impact of my actions",
+        label:
+          "Seeing classmates and campus groups consistently do the right thing",
       },
     ],
-    section: "Make the change",
+    section: "Make the Change",
   },
   {
     id: "q16",
     type: "single-choice",
     label:
-      "If TheGreenFeed launched a practical waste-management initiative at PCTE, how likely would you be to participate?",
+      "If TheGreenFeed ran a practical waste-management activity at PCTE, how likely would you be to take part?",
     required: true,
     options: [
-      { value: "a", label: "Unlikely" },
-      { value: "b", label: "Maybe, depending on the activity" },
-      { value: "c", label: "Very likely" },
+      { value: "a", label: "Unlikely to participate" },
+      { value: "b", label: "Might participate, depending on the activity and timing" },
+      { value: "c", label: "Very likely to participate" },
     ],
-    section: "Make the change",
+    section: "Make the Change",
   },
 ];
 
@@ -282,11 +368,25 @@ export const surveyQuestions: SurveyQuestion[] = [
 /* Consent                                                                  */
 /* ------------------------------------------------------------------------ */
 
-/** Stable id under which the consent decision is stored in `answers`. */
+/** Stable id under which the consent choice is keyed in `answers`. */
 export const SURVEY_CONSENT_ID = "consent";
 
-export const SURVEY_CONSENT_LABEL =
-  "I have read the information above and agree to take part in this survey voluntarily.";
+/**
+ * The consent question and its options, exactly as specified in the source
+ * document. Only option "a" permits the respondent to continue; choosing "b"
+ * or "c" stops the survey without storing research answers.
+ */
+export const SURVEY_CONSENT_QUESTION =
+  "Do you agree to take part in this anonymous student survey?";
+
+export const SURVEY_CONSENT_OPTIONS = [
+  { value: "a", label: "Yes, I agree to participate." },
+  { value: "b", label: "No, I do not agree to participate." },
+  { value: "c", label: "Prefer not to answer." },
+] as const satisfies readonly SurveyOption[];
+
+/** The only consent choice that permits continuation. */
+export const SURVEY_CONSENT_ACCEPTED_VALUE = "a";
 
 /* ------------------------------------------------------------------------ */
 /* Respondent profile (minimum useful, non-identifying)                     */
@@ -307,56 +407,48 @@ export type SurveyProfileField = {
 };
 
 export const SURVEY_PROFILE_FIELDS: SurveyProfileField[] = [
-  {
-    id: "profile_programme",
-    label: "Programme / course",
-    type: "select",
-    required: true,
-    /**
-     * PLACEHOLDER OPTIONS — broad programme families, not a verified list of
-     * PCTE's current programmes. Verify against PCTE's current prospectus and
-     * replace/extend these values before publication; changing values later
-     * would split analysis, so this must be settled first.
-     */
-    options: [
-      { value: "engineering", label: "Engineering (e.g. B.Tech)" },
-      { value: "management", label: "Management / Commerce (e.g. BBA, B.Com)" },
-      {
-        value: "computer-applications",
-        label: "Computer applications (e.g. BCA, MCA)",
-      },
-      { value: "design-fashion", label: "Design / Fashion" },
-      { value: "other", label: "Other" },
-    ],
-  },
-  {
-    id: "profile_section",
-    label: "Class, section, or batch",
-    description: "Optional — where applicable.",
-    type: "short-text",
-    required: false,
-    maxLength: 60,
-    placeholder: "Section or batch name",
-  },
-  {
-    id: "profile_cohort",
-    label: "Admission year",
-    description: "Optional — used to group responses by cohort.",
-    type: "select",
-    required: false,
-    /**
-     * PLACEHOLDER RANGE — adjust to the active admission years before
-     * publication; older cohorts can be grouped as "earlier".
-     */
-    options: [
-      { value: "2026", label: "2026" },
-      { value: "2025", label: "2025" },
-      { value: "2024", label: "2024" },
-      { value: "2023", label: "2023" },
-      { value: "2022", label: "2022" },
-      { value: "earlier", label: "Before 2022" },
-    ],
-  },
+  /**
+   * NO PROFILE FIELDS ARE COLLECTED while their option lists are unverified.
+   *
+   * The approved survey document requires: collect Programme, Section/batch,
+   * and Admission cohort "only if the options can be verified against current
+   * PCTE records … If accurate options cannot be verified, omit the affected
+   * profile field" rather than launch with invented options.
+   *
+   * The candidate definitions below are placeholders collected during earlier
+   * planning; they were never verified against a PCTE source. To re-enable a
+   * field after verification, restore it into this array (the UI, validation,
+   * and server handling are all driven by this array):
+   *
+   * {
+   *   id: "profile_programme",
+   *   label: "Programme / course",
+   *   type: "select",
+   *   required: true,
+   *   options: [ … verified programme list with stable values … ],
+   * },
+   * {
+   *   id: "profile_section",
+   *   label: "Class, section, or batch",
+   *   description: "Optional — where applicable.",
+   *   type: "short-text",
+   *   required: false,
+   *   maxLength: 60,
+   *   placeholder: "Section or batch name",
+   * },
+   * {
+   *   id: "profile_cohort",
+   *   label: "Admission year",
+   *   description: "Optional — used to group responses by cohort.",
+   *   type: "select",
+   *   required: false,
+   *   options: [ … verified admission years …, { value: "earlier", label: "Before <year>" } ],
+   * },
+   *
+   * Notes: admission year is a cohort label, NOT equivalent to current year of
+   * study. Never ask for names, roll numbers, phone numbers, or email
+   * addresses. Changing option values after publication would split analysis.
+   */
 ];
 
 /* ------------------------------------------------------------------------ */

@@ -106,8 +106,8 @@ the table live until you have verified it in the dashboard.
 
 ## The 16-question research survey
 
-The approved 16-question instrument (three sections: The reality, What reaches
-you?, Make the change) is implemented in `src/data/survey-questions.ts`, along
+The approved 16-question instrument (three sections: The Reality,
+What Reaches You?, Make the Change) is implemented in `src/data/survey-questions.ts`, along
 with consent and the minimum respondent-profile fields (programme, section,
 admission-year cohort). The wording is approved content — do not rewrite the
 questions or invent a scoring system.
@@ -172,9 +172,13 @@ count) — never answers or credentials.
   recall, practical knowledge, reported behaviour, campaign preferences, and
   willingness to participate as **distinct constructs** — aggregate results
   should not be merged into a single "score", and no causal claims should be
-  made. Q5/Q7 measure prior awareness, so keep them first in their section and
-  before any explanatory content.
+  made. Questions and options are transcribed verbatim from
+  `TheGreenFeed_16_Question_Survey.md`; they must not be reworded, reordered,
+  or added to.
 - Approximate duration (2–3 minutes) is an estimate subject to pilot testing.
+- Q5 measures prior awareness of campus fines; Q6 preserves an explicit
+  "was not aware" option so awareness and perceived influence are measured as
+  separate constructs.
 
 Validation is enforced twice: in the browser for usability, and again on the
 server (which is the source of truth). The server rejects consent-less
@@ -184,12 +188,29 @@ oversized text, and payloads over 20 KB.
 ### Abuse protection
 
 The endpoint currently protects itself with strict payload validation, a
-20 000-character body limit, and a same-origin check. **Rate limiting is not
-configured.** In-memory rate limiting would not be reliable across serverless
-instances, so it was intentionally not faked. Before or shortly after launch,
-add a persistent limiter — for example a Vercel Web Application Firewall rule,
-or a shared store such as Upstash Redis checked inside the route handler — and
-treat repeated `survey_submissions` inserts as the signal to tune it.
+20 000-character body limit, a same-origin check, and a database that only the
+server-side secret key can write to. **Persistent rate limiting is not
+configured, and this blocks public launch.** In-memory rate limiting would not
+be reliable across serverless instances, so it was intentionally not faked.
+
+Two supported ways to add it, in order of preference:
+
+1. **Vercel Web Application Firewall (no code).** In the Vercel dashboard open
+   the project → **Firewall** → add a rate-limit rule scoped to
+   `Path equals /api/survey` with `Method equals POST`, for example
+   `60 requests / 1 minute per IP`, action **Rate Limit** (HTTP 429). Platform
+   rules persist across serverless instances. This is the recommended option
+   because it needs no credentials in the app and cannot silently no-op.
+2. **Upstash Redis (code).** Create an Upstash Redis database, then set
+   `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` as Vercel environment
+   variables (server-only, never `NEXT_PUBLIC_`) and add an
+   `@upstash/ratelimit` sliding-window check at the top of
+   `src/app/api/survey/route.ts`, returning HTTP 429 when exceeded. Do not add a
+   process-local limiter.
+
+Until one of these is configured and verified, keep `SURVEY_PUBLISHED = false`.
+After launch, treat repeated `survey_submissions` inserts as the signal to
+tune the limit.
 
 ## Project structure
 

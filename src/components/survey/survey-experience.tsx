@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -22,8 +22,10 @@ import {
 } from "@/components/ui/select";
 import { SurveyField } from "@/components/survey/survey-field";
 import {
+  SURVEY_CONSENT_ACCEPTED_VALUE,
   SURVEY_CONSENT_ID,
-  SURVEY_CONSENT_LABEL,
+  SURVEY_CONSENT_OPTIONS,
+  SURVEY_CONSENT_QUESTION,
   SURVEY_PROFILE_FIELDS,
   SURVEY_SECTIONS,
   surveyQuestions,
@@ -79,13 +81,27 @@ export function SurveyExperience() {
     });
   }
 
-  const consentGiven = answers[SURVEY_CONSENT_ID] === true;
+  const consentAccepted =
+    answers[SURVEY_CONSENT_ID] === SURVEY_CONSENT_ACCEPTED_VALUE;
+  const consentDeclined =
+    answers[SURVEY_CONSENT_ID] === "b" || answers[SURVEY_CONSENT_ID] === "c";
+  /**
+   * The profile phase is skipped entirely while no profile fields are
+   * configured. It returns automatically as soon as verified fields are
+   * restored to SURVEY_PROFILE_FIELDS.
+   */
+  const hasProfileFields = SURVEY_PROFILE_FIELDS.length > 0;
 
   function handleStart() {
-    if (!consentGiven || submitting) return;
+    if (!consentAccepted || submitting) return;
     setErrors({});
     setSubmitError(null);
-    setPhase("profile");
+    if (hasProfileFields) {
+      setPhase("profile");
+    } else {
+      setIndex(0);
+      setPhase("questions");
+    }
   }
 
   function handleProfileContinue() {
@@ -102,8 +118,10 @@ export function SurveyExperience() {
     if (submitting) return;
     setSubmitError(null);
     if (phase === "questions") {
-      if (index === 0) setPhase("profile");
-      else setIndex(index - 1);
+      if (index === 0) {
+        if (hasProfileFields) setPhase("profile");
+        else setPhase("intro");
+      } else setIndex(index - 1);
     } else if (phase === "profile") {
       setPhase("intro");
     }
@@ -125,7 +143,7 @@ export function SurveyExperience() {
     const profileErrors = validateSurveyProfile(SURVEY_PROFILE_FIELDS, answers);
     const allErrors = { ...profileErrors, ...questionErrors };
 
-    if (answers[SURVEY_CONSENT_ID] !== true) {
+    if (!consentAccepted) {
       setErrors(allErrors);
       setSubmitError(
         "Consent is required before your response can be submitted.",
@@ -147,8 +165,19 @@ export function SurveyExperience() {
     setSubmitError(null);
 
     try {
+      // The client-side consent choice is "a" at this point. It is stored as
+      // consent = true (the stored decision to participate); the database
+      // schema is unchanged.
       // Success is shown only after the server confirms the insert.
-      await submitSurveyAnswers(answers);
+      // The client-side consent choice is "a" at this point. It is stored as
+      // consent = true (the stored decision to participate); the database
+      // schema is unchanged. With no profile fields configured, `answers`
+      // contains only research-answer keys and consent.
+      // Success is shown only after the server confirms the insert.
+      await submitSurveyAnswers({
+        ...answers,
+        [SURVEY_CONSENT_ID]: true,
+      } satisfies SurveyAnswers);
       setPhase("success");
     } catch (error) {
       setSubmitError(
@@ -176,11 +205,10 @@ export function SurveyExperience() {
           <h2 className="text-title font-semibold text-forest">Before we begin</h2>
           <ul className="flex flex-col gap-3">
             {[
-              "The purpose is to understand PCTE students' experiences with campus waste management and existing awareness efforts.",
+              "The survey asks about what you experience at PCTE, what information reaches you, and what changes could help. Responses support a student-focused public-relations campaign.",
               "Participation is voluntary, and you can close this page at any time before submitting.",
-              "Responses are anonymous and will be used for academic PR research and campaign planning.",
-              "Please answer based on your experiences before taking this survey.",
-              "It should take about 2–3 minutes, subject to pilot testing.",
+              "Responses are anonymous. Please do not include your name, roll number, phone number, or email address.",
+              "It should take about 2–3 minutes; completion time will be validated by a pilot test.",
             ].map((point) => (
               <li key={point} className="flex gap-3 text-sm text-ink/80 sm:text-base">
                 <span
@@ -193,25 +221,53 @@ export function SurveyExperience() {
           </ul>
         </div>
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-hairline bg-cream px-4 py-4 transition-colors hover:bg-secondary focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-forest">
-          <Checkbox
-            checked={consentGiven}
-            disabled={submitting}
-            className="mt-0.5"
-            onCheckedChange={(checked) =>
-              setAnswer(SURVEY_CONSENT_ID, checked === true)
-            }
-          />
-          <span className="text-sm text-ink sm:text-base">
-            {SURVEY_CONSENT_LABEL}
-          </span>
-        </label>
+        <fieldset className="rounded-xl border border-hairline bg-cream px-4 py-4 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-forest">
+          <legend className="px-1 text-sm font-semibold text-forest sm:text-base">
+            {SURVEY_CONSENT_QUESTION}
+          </legend>
+          <RadioGroup
+            value={typeof answers[SURVEY_CONSENT_ID] === "string"
+              ? (answers[SURVEY_CONSENT_ID] as string)
+              : ""}
+            onValueChange={(next) => setAnswer(SURVEY_CONSENT_ID, String(next))}
+            className="mt-3 flex flex-col gap-2.5"
+          >
+            {SURVEY_CONSENT_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className="group/option flex cursor-pointer items-start gap-3 rounded-xl border border-hairline bg-white px-4 py-3 transition-colors hover:border-forest/50 hover:bg-secondary has-data-checked:border-forest has-data-checked:bg-lime/15"
+              >
+                <span
+                  aria-hidden="true"
+                  className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-forest group-has-data-checked:bg-forest group-has-data-checked:text-lime"
+                >
+                  {option.value.toUpperCase()}
+                </span>
+                <RadioGroupItem value={option.value} className="sr-only" />
+                <span className="text-sm text-ink sm:text-base">
+                  {option.label}
+                </span>
+              </label>
+            ))}
+          </RadioGroup>
+        </fieldset>
+
+        {consentDeclined ? (
+          <div
+            role="status"
+            className="rounded-xl bg-cream px-4 py-3 text-sm text-ink/80 ring-1 ring-hairline"
+          >
+            You chose not to participate or preferred not to answer. The survey
+            ends here — nothing has been saved. If this was a mistake, you can
+            change your selection above.
+          </div>
+        ) : null}
 
         <Button
           size="lg"
           className="h-11 w-full px-6 text-base sm:w-fit sm:self-start"
           onClick={handleStart}
-          disabled={!consentGiven}
+          disabled={!consentAccepted}
         >
           Start the survey
           <ArrowRight aria-hidden="true" />
@@ -432,6 +488,9 @@ export function SurveyExperience() {
   const question = surveyQuestions[index];
   const sectionNumber =
     SURVEY_SECTIONS.findIndex((section) => section.title === question.section) + 1;
+  const sectionSubtitle =
+    SURVEY_SECTIONS.find((section) => section.title === question.section)
+      ?.subtitle;
   const sectionTitle = question.section;
   const isLast = index === TOTAL_QUESTIONS - 1;
   const answered = !isEmptyAnswer(answers[question.id]);
@@ -454,6 +513,9 @@ export function SurveyExperience() {
             Question {index + 1} of {TOTAL_QUESTIONS}
           </p>
         </div>
+        {sectionSubtitle ? (
+          <p className="text-xs text-muted-ink">{sectionSubtitle}</p>
+        ) : null}
         <Progress
           value={index}
           max={TOTAL_QUESTIONS}

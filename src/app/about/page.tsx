@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { Container } from "@/components/site/container";
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "About",
@@ -71,17 +70,17 @@ export default function AboutPage() {
               ))}
             </dl>
             <div className="flex flex-wrap gap-3 pt-2">
-              <Button render={<Link href="/blog" />} size="lg" className="h-11 px-5">
+              <ButtonLink href="/blog" size="lg" className="h-11 px-5">
                 Read the guides
-              </Button>
-              <Button
-                render={<Link href="/survey" />}
+              </ButtonLink>
+              <ButtonLink
+                href="/survey"
                 variant="outline"
                 size="lg"
                 className="h-11 px-5"
               >
                 Take the survey
-              </Button>
+              </ButtonLink>
             </div>
           </div>
         </Container>
