@@ -41,13 +41,13 @@ function loadEnvFile(path) {
 
 loadEnvFile(".env.local");
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const url = process.env.SUPABASE_URL;
+const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
 const secretKey = process.env.SUPABASE_SECRET_KEY;
 
 if (!url || !publishableKey || !secretKey) {
   console.error(
-    "Not configured: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY / SUPABASE_SECRET_KEY must be set in .env.local.",
+    "Not configured: SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY / SUPABASE_SECRET_KEY must be set in .env.local.",
   );
   process.exit(1);
 }

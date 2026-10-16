@@ -41,12 +41,12 @@ function loadEnvFile(path) {
 
 loadEnvFile(".env.local");
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const url = process.env.SUPABASE_URL;
 const secretKey = process.env.SUPABASE_SECRET_KEY;
 
 if (!url || !secretKey) {
   console.error(
-    "Not configured: NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SECRET_KEY are missing in .env.local.",
+    "Not configured: SUPABASE_URL / SUPABASE_SECRET_KEY are missing in .env.local.",
   );
   process.exit(1);
 }

@@ -55,9 +55,14 @@ safe to commit. Variables:
 
 | Variable | Scope | Purpose |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | browser + server | Supabase Project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | browser + server | Supabase publishable key (a legacy `anon` key works here if your project has not migrated) |
+| `SUPABASE_URL` | server only | Supabase Project URL |
+| `SUPABASE_PUBLISHABLE_KEY` | server only | Supabase publishable key (a legacy `anon` key works here if your project has not migrated) |
 | `SUPABASE_SECRET_KEY` | server only | Privileged key for the survey insert route. **Never** prefix with `NEXT_PUBLIC_`. |
+
+These names match the Vercel project environment exactly. None is prefixed with
+`NEXT_PUBLIC_`, so none is exposed to browser JavaScript; the browser never talks
+to Supabase directly — submissions go through the server-side `/api/survey`
+route.
 
 Where to find the values: Supabase dashboard → **Project Settings → API**.
 The site still builds and runs without these values; only the survey depends on
@@ -309,8 +314,8 @@ other routes are unaffected; `/nope`-style top-level 404s respond with a proper
 
 1. **Apply the migration** to your Supabase project (SQL Editor steps above)
    and verify the table exists with RLS enabled and no policies.
-2. **Configure credentials** in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`,
-   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and — for the survey insert route —
+2. **Configure credentials** in `.env.local`: `SUPABASE_URL`,
+   `SUPABASE_PUBLISHABLE_KEY`, and — for the survey insert route —
    `SUPABASE_SECRET_KEY`. Copy them from the Supabase dashboard → Project
    Settings → API; never paste them into chat or commits.
 3. **Verify a test submission** locally (`SURVEY_DEV_PREVIEW=1` in
@@ -328,21 +333,22 @@ other routes are unaffected; `/nope`-style top-level 404s respond with a proper
 
 ## Deployment
 
-Not deployed yet. When ready:
+Deployed on Vercel at `https://thegreenfeed-p385.vercel.app`. The Vercel project
+is connected to this GitHub repository, so every push to `main` produces a
+Production deployment.
 
-1. Push the repository to GitHub.
-2. In Vercel, import the repository (framework preset: Next.js; build command
-   and settings come from `package.json` automatically).
-3. Add the environment variables in the Vercel project settings —
-   **Project → Settings → Environment Variables** — for Production (and
-   Preview if desired):
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+1. In Vercel, ensure the project's environment variables — **Project → Settings
+   → Environment Variables**, for Production (and Preview if desired) — are named
+   **exactly** as the application reads them:
+   - `SUPABASE_URL`
+   - `SUPABASE_PUBLISHABLE_KEY`
    - `SUPABASE_SECRET_KEY` (mark it as a sensitive/server-only value)
-4. Redeploy so the variables take effect, then verify:
+2. After changing variables, redeploy (push to `main`, or "Redeploy" in
+   Vercel) so the new values take effect, then verify:
    - every route loads directly and on refresh, including `/blog/<slug>`;
-   - the survey shows its closed state, and `POST /api/survey` responds with
-     HTTP 503 until the questions are published and the table exists.
+   - `/survey` renders the live survey and `POST /api/survey` records a response
+     (a submission missing consent should return HTTP 400, not 503).
 
-Do not treat the site as deployed until these steps have actually been
-performed.
+Variable names must match exactly — a mismatch such as `NEXT_PUBLIC_SUPABASE_URL`
+instead of `SUPABASE_URL` leaves the server-side Supabase client unconfigured and
+submissions fail with HTTP 503 "The survey service is not configured yet".
