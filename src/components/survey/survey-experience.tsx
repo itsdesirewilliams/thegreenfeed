@@ -173,10 +173,7 @@ export function SurveyExperience() {
         className="flex flex-col gap-6 rounded-2xl bg-white p-6 ring-1 ring-forest/10 outline-none sm:p-8"
       >
         <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold tracking-[0.2em] text-muted-ink uppercase">
-            TheGreenFeed research survey
-          </p>
-          <h2 className="font-serif text-title text-forest">Before we begin</h2>
+          <h2 className="text-title font-semibold text-forest">Before we begin</h2>
           <ul className="flex flex-col gap-3">
             {[
               "The purpose is to understand PCTE students' experiences with campus waste management and existing awareness efforts.",
@@ -235,10 +232,7 @@ export function SurveyExperience() {
         className="flex flex-col gap-6 rounded-2xl bg-white p-6 ring-1 ring-forest/10 outline-none sm:p-8"
       >
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold tracking-[0.2em] text-muted-ink uppercase">
-            About you
-          </p>
-          <h2 className="font-serif text-title text-forest">
+          <h2 className="text-title font-semibold text-forest">
             A few details, no names
           </h2>
           <p className="text-sm text-muted-ink">
@@ -398,7 +392,7 @@ export function SurveyExperience() {
           <span className="flex size-10 items-center justify-center rounded-full bg-lime/25 text-forest">
             <CircleCheck className="size-6" aria-hidden="true" />
           </span>
-          <h2 className="font-serif text-title text-forest">
+          <h2 className="text-title font-semibold text-forest">
             Thank you — your response was recorded.
           </h2>
           <p className="text-sm text-ink/75 sm:text-base">
@@ -415,7 +409,7 @@ export function SurveyExperience() {
                 key={question.id}
                 className="flex items-baseline gap-3 px-4 py-2.5 text-sm"
               >
-                <span className="shrink-0 font-sans text-xs font-semibold text-muted-ink">
+                <span className="text-sm">
                   {String(questionIndex + 1).padStart(2, "0")}
                 </span>
                 <span className="text-ink">{chosen ?? "—"}</span>
@@ -450,14 +444,14 @@ export function SurveyExperience() {
         className="flex flex-col gap-3 outline-none"
       >
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <p className="text-xs font-semibold tracking-[0.2em] text-muted-ink uppercase">
+          <p className="text-sm font-medium text-muted-ink">
             Section {sectionNumber} · {sectionTitle}
           </p>
           <p
-            className="text-xs font-semibold tracking-[0.2em] text-forest uppercase"
+            className="text-sm font-semibold text-forest"
             aria-live="polite"
           >
-            Question {String(index + 1).padStart(2, "0")} of {TOTAL_QUESTIONS}
+            Question {index + 1} of {TOTAL_QUESTIONS}
           </p>
         </div>
         <Progress

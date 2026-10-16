@@ -11,7 +11,7 @@ export function SiteHeader() {
       <Container className="flex h-16 items-center justify-between gap-4">
         <Link
           href="/"
-          className="font-serif text-2xl leading-none text-forest focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-forest"
+          className="text-2xl font-semibold tracking-tight leading-none text-forest focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-forest"
         >
           TheGreenFeed
         </Link>

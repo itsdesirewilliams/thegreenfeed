@@ -5,10 +5,7 @@ export function WhyItMatters() {
   return (
     <section className="bg-white">
       <Container className="grid gap-10 py-16 sm:py-20 lg:grid-cols-[1fr_1fr] lg:gap-16">
-        <SectionHeading
-          eyebrow="Why it matters"
-          title="How we handle waste shapes the world around us."
-        />
+        <SectionHeading title="How we handle waste shapes the world around us." />
         <div className="flex flex-col gap-6">
           <p className="max-w-prose text-lg text-ink/80">
             How we buy, use, separate, and dispose of materials affects the
@@ -21,7 +18,7 @@ export function WhyItMatters() {
             complicated — it starts with a few everyday decisions that anyone
             can make.
           </p>
-          <blockquote className="border-l-2 border-lime pl-5 font-serif text-2xl leading-snug text-forest">
+          <blockquote className="pt-2 text-2xl font-semibold leading-snug text-forest">
             The best waste is the waste we never create.
           </blockquote>
         </div>

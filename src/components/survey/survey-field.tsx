@@ -35,7 +35,7 @@ export function SurveyField({
       tabIndex={-1}
       className="flex flex-col gap-3 outline-none"
     >
-      <legend className="font-serif text-2xl leading-snug text-forest">
+      <legend className="text-xl/7 font-semibold text-forest">
         {question.label}
         {question.required ? (
           <span className="ml-1 text-destructive" aria-hidden="true">

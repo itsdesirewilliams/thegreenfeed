@@ -28,7 +28,6 @@ export default function SurveyPage() {
     <main id="main" className="flex flex-1 flex-col bg-cream">
       <Container className="max-w-3xl py-14 sm:py-16">
         <SectionHeading
-          eyebrow="Survey"
           title="Help us understand waste habits."
           description="A short, anonymous survey about waste management at PCTE — your experiences, what reaches you, and what would help."
         />

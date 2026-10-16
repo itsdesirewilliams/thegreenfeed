@@ -9,7 +9,7 @@ export function SiteFooter() {
       <Container className="py-12 sm:py-16">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr]">
           <div className="flex flex-col gap-3">
-            <p className="font-serif text-3xl leading-none text-cream">
+            <p className="text-3xl font-semibold tracking-tight leading-none text-cream">
               TheGreenFeed
             </p>
             <p className="max-w-sm text-sm text-cream/75">{SITE.description}</p>

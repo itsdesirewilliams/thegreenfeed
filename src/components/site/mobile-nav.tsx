@@ -28,7 +28,7 @@ export function MobileNav() {
       </SheetTrigger>
       <SheetContent side="right" className="bg-cream">
         <SheetHeader>
-          <SheetTitle className="font-serif text-2xl text-forest">
+          <SheetTitle className="text-2xl font-semibold tracking-tight text-forest">
             TheGreenFeed
           </SheetTitle>
           <SheetDescription>

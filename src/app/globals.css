@@ -55,6 +55,12 @@
   --sidebar-accent-foreground: var(--forest);
   --sidebar-border: var(--hairline);
   --sidebar-ring: var(--forest);
+
+  /* Elevation + geometry for custom surfaces */
+  --radius-card: 1rem;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 2px rgba(12, 32, 22, 0.06), 0 4px 16px rgba(10, 28, 20, 0.07);
+  --shadow-raised: 0 2px 6px rgba(10, 28, 20, 0.08), 0 12px 32px rgba(8, 22, 16, 0.08);
 }
 
 .dark {
@@ -87,10 +93,14 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-manrope);
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-  --font-serif: var(--font-instrument-serif);
-  --font-heading: var(--font-instrument-serif);
+  --font-sans: var(--font-mona-sans);
+  /* Headings, wordmarks, and any legacy font-* class all resolve to Mona
+     Sans — a single typeface site-wide (UI/body faces are one and the same;
+     hierarchy comes from weight and tracking). */
+  --font-mono: var(--font-mona-sans), ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, monospace;
+  --font-serif: var(--font-mona-sans);
+  --font-heading: var(--font-mona-sans);
 
   /* Brand colour utilities: bg-forest, text-lime, border-hairline, ... */
   --color-forest: var(--forest);
@@ -146,6 +156,10 @@
   --text-title: clamp(1.75rem, 2.5vw + 1rem, 2.75rem);
   --text-title--line-height: 1.1;
   --text-title--letter-spacing: -0.01em;
+
+  /* Elevation utilities: shadow-card, shadow-raised */
+  --shadow-card: 0 1px 2px rgba(12, 32, 22, 0.06), 0 4px 16px rgba(10, 28, 20, 0.07);
+  --shadow-raised: 0 2px 6px rgba(10, 28, 20, 0.08), 0 12px 32px rgba(8, 22, 16, 0.08);
 }
 
 @layer base {
@@ -158,8 +172,18 @@
   html {
     @apply font-sans;
   }
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-ring;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
   }
 }
 
@@ -172,4 +196,41 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ---- Layout primitives ---------------------------------------------- */
+
+.stack-sm > * + * { margin-top: 0.5rem; }
+.stack > * + * { margin-top: 1rem; }
+.stack-lg > * + * { margin-top: 2rem; }
+
+/* Eyebrow labels were removed from the design; no utility is needed. */
+
+.prose-measure {
+  max-width: 42rem;
+}
+
+/* Section banding: a soft alternate next to plain cream sections. */
+.section-tinted {
+  background: var(--secondary);
+}
+
+/* Card utility — quiet border, soft shadow on hover. */
+.card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-card);
+}
+
+/* Body-text lead paragraph helper. */
+.text-lede {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--muted-foreground);
 }

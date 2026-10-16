@@ -35,15 +35,14 @@ export function PracticalTips() {
     <section className="bg-deep-green">
       <Container className="py-16 sm:py-20">
         <SectionHeading
-          eyebrow="Practical tips"
           tone="dark"
           title="Small habits, at college and at home"
           description="Simple, repeatable actions that keep shared spaces cleaner and make waste easier to handle."
         />
-        <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="mt-10 grid gap-10 rounded-3xl bg-forest/40 p-6 ring-1 ring-cream/10 sm:p-10 lg:grid-cols-2 lg:gap-16">
           {TIP_GROUPS.map((group) => (
             <div key={group.title} className="flex flex-col gap-5">
-              <h3 className="font-serif text-2xl text-lime">{group.title}</h3>
+              <h3 className="text-2xl font-semibold text-lime">{group.title}</h3>
               <ul className="flex flex-col gap-3">
                 {group.tips.map((tip) => (
                   <li key={tip} className="flex gap-3 text-cream/85">

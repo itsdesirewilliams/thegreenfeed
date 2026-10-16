@@ -16,7 +16,6 @@ export default function BlogPage() {
       <section className="bg-cream">
         <Container className="py-14 sm:py-16">
           <SectionHeading
-            eyebrow="Blog"
             title="Practical waste-management guides"
             description="Plain-language, practical articles for students and communities. Written by Hannah Lepathy."
           />

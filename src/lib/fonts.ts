@@ -1,22 +1,12 @@
-import { Instrument_Serif, Manrope } from "next/font/google";
+import { Mona_Sans } from "next/font/google";
 
 /**
- * Instrument Serif — editorial display headlines and selected pull quotes.
- * Not a variable font, so the weight is specified explicitly.
+ * Mona Sans — the only typeface on the site. A variable font used for
+ * everything: UI, body copy, and display headlines (via font weight and
+ * tracking rather than a separate face).
  */
-export const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
-  display: "swap",
-  variable: "--font-instrument-serif",
-});
-
-/**
- * Manrope — the default UI and body typeface (navigation, copy, labels, forms).
- */
-export const manrope = Manrope({
+export const monaSans = Mona_Sans({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-manrope",
+  variable: "--font-mona-sans",
 });

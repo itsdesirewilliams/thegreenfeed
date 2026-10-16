@@ -65,12 +65,10 @@ export default async function BlogArticlePage(
               <ArrowLeft className="size-4" aria-hidden="true" />
               Back to blog
             </Link>
-            <h1 className="mt-6 font-serif text-title text-balance text-forest">
+            <h1 className="mt-6 text-title font-semibold text-balance text-forest">
               {post.title}
             </h1>
-            <p className="mt-4 text-xs font-semibold tracking-wide text-muted-ink uppercase">
-              By {post.author}
-            </p>
+            <p className="mt-4 text-sm text-muted-ink">By {post.author}</p>
             <p className="mt-6 text-lg text-ink/80">{post.intro}</p>
           </Container>
         </header>
@@ -88,32 +86,30 @@ export default async function BlogArticlePage(
               />
             </div>
 
-            <div className="mt-10 flex flex-col gap-8">
+            <div className="prose-measure mx-auto mt-12 flex flex-col gap-8">
               {post.sections.map((section) => (
-                <section key={section.heading} className="flex flex-col gap-3">
-                  <h2 className="font-serif text-2xl text-forest">
+                <section key={section.heading} className="flex flex-col gap-4">
+                  <h2 className="text-2xl font-semibold tracking-tight text-forest">
                     {section.heading}
                   </h2>
                   {section.paragraphs.map((paragraph) => (
                     <p
                       key={paragraph}
-                      className="max-w-prose text-base leading-relaxed text-ink/80"
+                      className="text-lg/relaxed text-ink/85"
                     >
                       {paragraph}
                     </p>
                   ))}
                 </section>
               ))}
-            </div>
 
-            <aside className="mt-10 rounded-2xl border-l-4 border-lime bg-cream p-6">
-              <p className="text-xs font-semibold tracking-[0.2em] text-muted-ink uppercase">
-                Takeaway
-              </p>
-              <p className="mt-2 font-serif text-xl text-forest">
-                {post.takeaway}
-              </p>
-            </aside>
+              <aside className="rounded-2xl bg-cream p-6 ring-1 ring-lime/50 sm:p-8">
+                <p className="text-sm font-semibold text-forest">Takeaway</p>
+                <p className="mt-2 text-xl font-medium leading-snug text-forest">
+                  {post.takeaway}
+                </p>
+              </aside>
+            </div>
           </Container>
         </div>
       </article>
@@ -121,7 +117,9 @@ export default async function BlogArticlePage(
       {related.length > 0 ? (
         <section className="bg-cream">
           <Container className="py-12 sm:py-16">
-            <h2 className="font-serif text-2xl text-forest">Related articles</h2>
+            <h2 className="text-2xl font-semibold text-forest">
+              Related articles
+            </h2>
             <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((relatedPost) => (
                 <BlogCard key={relatedPost.slug} post={relatedPost} />

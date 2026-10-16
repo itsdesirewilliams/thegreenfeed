@@ -6,7 +6,7 @@ export function ClosingCta() {
   return (
     <section className="bg-deep-green">
       <Container className="flex flex-col items-center gap-6 py-16 text-center sm:py-20">
-        <h2 className="font-serif text-title text-cream">
+        <h2 className="text-title font-semibold text-cream">
           A cleaner campus starts with us.
         </h2>
         <p className="max-w-prose text-lg text-cream/80">

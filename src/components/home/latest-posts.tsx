@@ -13,8 +13,7 @@ export function LatestPosts() {
       <Container className="py-16 sm:py-20">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <SectionHeading
-            eyebrow="Blog"
-            title="Latest from the Blog"
+            title="Latest from the blog"
             description="Short, practical guides you can put to use today."
           />
           <Link

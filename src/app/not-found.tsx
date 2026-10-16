@@ -14,10 +14,8 @@ export default function NotFound() {
       className="flex flex-1 items-center bg-cream"
     >
       <Container className="flex max-w-2xl flex-col items-start gap-5 py-20">
-        <p className="text-xs font-semibold tracking-[0.2em] text-muted-ink uppercase">
-          404
-        </p>
-        <h1 className="font-serif text-title text-forest">
+        <p className="text-lg font-semibold text-muted-ink">404</p>
+        <h1 className="text-title font-semibold text-forest">
           This page could not be found.
         </h1>
         <p className="max-w-prose text-ink/80">

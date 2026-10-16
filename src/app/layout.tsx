@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { instrumentSerif, manrope } from "@/lib/fonts";
+import { monaSans } from "@/lib/fonts";
 import { SiteHeader } from "@/components/site/header";
 import { SiteFooter } from "@/components/site/footer";
 import "./globals.css";
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={`${monaSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
         <a

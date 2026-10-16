@@ -11,9 +11,8 @@ export function GreenFeedSection() {
     <section className="bg-cream">
       <Container className="py-16 sm:py-20">
         <SectionHeading
-          eyebrow="From the campaign"
           align="center"
-          title="GreenFeed in Action"
+          title="GreenFeed in action"
           description="Highlights from the GreenFeed campaign. Tap any slide to visit the profile on Instagram."
         />
         <div className="mt-10">
