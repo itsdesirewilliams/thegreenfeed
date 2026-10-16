@@ -1,0 +1,856 @@
+{
+  "schemaVersion": "1.0.0",
+  "title": "TheGreenFeed Deterministic Survey Analysis Framework",
+  "purpose": "A versioned rules-and-interpretation file for turning aggregate survey responses into transparent findings and practical next steps.",
+  "method": {
+    "type": "deterministic_rule_based",
+    "displayCountsAndPercentages": true,
+    "reportValidNForEveryQuestion": true,
+    "dominance": {
+      "majority": "leading option > 50% of valid answers",
+      "plurality": "leading option is largest but <= 50%",
+      "closeSplit": "top two options differ by < 10 percentage points; describe as mixed",
+      "tie": "two or more options share the highest count",
+      "minimumNForInterpretiveLanguage": 10,
+      "smallSampleWarning": "For N < 10, show descriptive counts but label interpretation preliminary."
+    },
+    "guardrails": [
+      "Use cautious language: may indicate, is consistent with, suggests.",
+      "Never claim causation from this cross-sectional self-report survey.",
+      "Do not infer why a student chose an answer unless the survey asked why.",
+      "Do not treat missing answers as A, B or C.",
+      "Show N and counts alongside percentages; small percentage differences are not automatically meaningful.",
+      "Compare related questions before recommending an intervention.",
+      "Do not claim respondents represent all PCTE students unless the sampling method supports that.",
+      "Separate observed facts from interpretation and recommendations."
+    ]
+  },
+  "studentDetailsPrivacy": {
+    "fields": [
+      "profile_full_name",
+      "profile_programme",
+      "profile_phone"
+    ],
+    "rules": [
+      "Because name and course are collected, do not call responses anonymous.",
+      "Keep names and phone numbers out of aggregate analysis and analysis exports.",
+      "Raw response export contains identifying data and must be admin-only.",
+      "Suppress or combine very small programme groups in breakdowns."
+    ]
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "section": "The Reality",
+      "construct": "Observed frequency of improper disposal",
+      "options": {
+        "a": {
+          "label": "Rarely or never",
+          "interpretation": "Low reported visibility; could reflect cleaner routes/times or lower exposure."
+        },
+        "b": {
+          "label": "Sometimes",
+          "interpretation": "An intermittent or location-specific problem may be present."
+        },
+        "c": {
+          "label": "Often or very often",
+          "interpretation": "A visible problem may warrant hotspot checks and direct observation."
+        }
+      },
+      "crossChecks": [
+        "q2",
+        "q11"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q2",
+      "section": "The Reality",
+      "construct": "Perceived location of problems",
+      "options": {
+        "a": {
+          "label": "Canteens, food areas or student gathering spots",
+          "interpretation": "Inspect food packaging, peak traffic, bin access and collection frequency."
+        },
+        "b": {
+          "label": "Classrooms, corridors or other shared indoor areas",
+          "interpretation": "Review indoor bin access, labels, routines and cleaning schedules."
+        },
+        "c": {
+          "label": "Outdoor areas, pathways or other places around campus",
+          "interpretation": "Review outdoor bin placement, high-traffic paths and wind-blown litter."
+        }
+      },
+      "crossChecks": [
+        "q1",
+        "q11",
+        "q12",
+        "q15"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q3",
+      "section": "The Reality",
+      "construct": "Stated response when the nearest bin is inconvenient",
+      "options": {
+        "a": {
+          "label": "Use the nearest bin or leave the waste nearby",
+          "interpretation": "May signal convenience barriers; this option combines two behaviours, so interpret cautiously."
+        },
+        "b": {
+          "label": "Look for another bin if one is reasonably close",
+          "interpretation": "Suggests some willingness to make an extra effort when manageable."
+        },
+        "c": {
+          "label": "Keep the waste with me until I find a suitable place to dispose of it",
+          "interpretation": "Suggests stated willingness to hold waste until a suitable bin is found."
+        }
+      },
+      "crossChecks": [
+        "q11",
+        "q12",
+        "q15"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q4",
+      "section": "The Reality",
+      "construct": "Stated response to peer littering",
+      "options": {
+        "a": {
+          "label": "Usually ignore it",
+          "interpretation": "Non-intervention is common; the survey does not reveal why."
+        },
+        "b": {
+          "label": "Feel uncomfortable but usually say nothing",
+          "interpretation": "May indicate a gap between disapproval and willingness to intervene."
+        },
+        "c": {
+          "label": "Politely speak up or encourage them to dispose of it properly",
+          "interpretation": "Suggests openness to respectful peer reminders; intention is not observed behaviour."
+        }
+      },
+      "crossChecks": [
+        "q13",
+        "q14",
+        "q16"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q5",
+      "section": "What Reaches You?",
+      "construct": "Awareness of fines",
+      "options": {
+        "a": {
+          "label": "Yes, I knew about both",
+          "interpretation": "Reported awareness, not proof of understanding or effectiveness."
+        },
+        "b": {
+          "label": "I knew about one of these, but not the other",
+          "interpretation": "Partial awareness may point to incomplete or unclear communication."
+        },
+        "c": {
+          "label": "No, I did not know about either",
+          "interpretation": "May indicate rules are not reaching many respondents."
+        }
+      },
+      "crossChecks": [
+        "q6",
+        "q7",
+        "q8",
+        "q13",
+        "q14"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q6",
+      "section": "What Reaches You?",
+      "construct": "Self-reported influence of fines",
+      "options": {
+        "a": {
+          "label": "I was not aware of these fines before this survey",
+          "interpretation": "Compare with q5; mismatches may reflect recall or interpretation."
+        },
+        "b": {
+          "label": "I know about them, but they have little or no influence on my behaviour",
+          "interpretation": "Awareness alone may not be enough; this does not prove enforcement is ineffective."
+        },
+        "c": {
+          "label": "They make me more careful about littering or chewing gum on campus",
+          "interpretation": "Reports perceived deterrence, not a causal effect."
+        }
+      },
+      "crossChecks": [
+        "q5",
+        "q7",
+        "q9",
+        "q14"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q7",
+      "section": "What Reaches You?",
+      "construct": "Visibility and recall of campus messages",
+      "options": {
+        "a": {
+          "label": "I rarely or never notice them",
+          "interpretation": "Placement, clutter or salience may be limiting visibility."
+        },
+        "b": {
+          "label": "I sometimes notice posters, but rarely remember what they say",
+          "interpretation": "Messages may be seen but not memorable or actionable."
+        },
+        "c": {
+          "label": "I notice them and can remember at least one message",
+          "interpretation": "Some messaging is recalled; recall does not prove behaviour change."
+        }
+      },
+      "crossChecks": [
+        "q5",
+        "q8",
+        "q9",
+        "q13",
+        "q14"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q8",
+      "section": "What Reaches You?",
+      "construct": "Runwalk/event message awareness",
+      "options": {
+        "a": {
+          "label": "I have not noticed these events or their environmental messages",
+          "interpretation": "Event-based environmental communication may have limited reach."
+        },
+        "b": {
+          "label": "I have noticed the event, but do not remember an environmental or waste-management message",
+          "interpretation": "The event may be visible while its environmental message is not salient."
+        },
+        "c": {
+          "label": "I remember seeing or hearing an environmental or waste-management message through one of these events",
+          "interpretation": "The message reached the respondent; recall does not prove action."
+        }
+      },
+      "crossChecks": [
+        "q7",
+        "q9",
+        "q13",
+        "q16"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q9",
+      "section": "What Reaches You?",
+      "construct": "Perceived adequacy of practical guidance",
+      "options": {
+        "a": {
+          "label": "Little or none",
+          "interpretation": "May indicate an education or communication gap."
+        },
+        "b": {
+          "label": "Some guidance, but not enough to feel consistent or practical",
+          "interpretation": "Guidance may be too abstract, occasional or disconnected from disposal points."
+        },
+        "c": {
+          "label": "Enough practical guidance to understand what I should do",
+          "interpretation": "Perceived adequacy should be checked against q10 and actual sorting conditions."
+        }
+      },
+      "crossChecks": [
+        "q10",
+        "q7",
+        "q8",
+        "q12",
+        "q13"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q10",
+      "section": "What Reaches You?",
+      "construct": "Confidence separating common waste",
+      "options": {
+        "a": {
+          "label": "Not confident; I am unsure how to separate them correctly",
+          "interpretation": "Practical, item-specific guidance may help; confidence is not a test of actual accuracy."
+        },
+        "b": {
+          "label": "Somewhat confident, but unsure about at least one item",
+          "interpretation": "Targeted guidance on confusing items may be useful."
+        },
+        "c": {
+          "label": "Confident that I know how to separate all three",
+          "interpretation": "High self-reported confidence; actual sorting accuracy remains untested."
+        }
+      },
+      "crossChecks": [
+        "q9",
+        "q12",
+        "q14",
+        "q15"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q11",
+      "section": "Make the Change",
+      "construct": "Perceived primary barrier",
+      "options": {
+        "a": {
+          "label": "Bins are hard to find, overflowing or not clearly labelled",
+          "interpretation": "Prioritize an infrastructure audit of access, capacity, labels and placement."
+        },
+        "b": {
+          "label": "Students lack awareness, motivation or clear guidance",
+          "interpretation": "Test practical guidance and peer-norm interventions while checking infrastructure."
+        },
+        "c": {
+          "label": "Both seem manageable to me; neither stands out as the main obstacle",
+          "interpretation": "Other barriers may exist; this does not prove there is no problem."
+        }
+      },
+      "crossChecks": [
+        "q1",
+        "q2",
+        "q3",
+        "q9",
+        "q12",
+        "q15"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q12",
+      "section": "Make the Change",
+      "construct": "Preferred practical intervention",
+      "options": {
+        "a": {
+          "label": "More accessible bins with clear labels showing what goes where",
+          "interpretation": "Students may value convenient infrastructure and clear sorting cues."
+        },
+        "b": {
+          "label": "Regular, practical demonstrations and easy-to-understand guidance",
+          "interpretation": "Practical education may be preferred over broad awareness messaging."
+        },
+        "c": {
+          "label": "Student-led activities that make proper disposal a shared campus habit",
+          "interpretation": "A voluntary peer-led pilot may be worth testing."
+        }
+      },
+      "crossChecks": [
+        "q11",
+        "q13",
+        "q15",
+        "q16"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q13",
+      "section": "Make the Change",
+      "construct": "Preferred campaign channel",
+      "options": {
+        "a": {
+          "label": "Short videos and social-media posts",
+          "interpretation": "A digital short-form pilot may be worth testing."
+        },
+        "b": {
+          "label": "Clear, well-placed posters and signs around campus",
+          "interpretation": "Test well-placed prompts, especially near disposal decisions."
+        },
+        "c": {
+          "label": "Live demonstrations, challenges or student events",
+          "interpretation": "Interactive formats may appeal; evaluate access, cost and actual participation."
+        }
+      },
+      "crossChecks": [
+        "q4",
+        "q7",
+        "q8",
+        "q12",
+        "q16"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q14",
+      "section": "Make the Change",
+      "construct": "Preferred message frame",
+      "options": {
+        "a": {
+          "label": "Make campus cleaner and more pleasant for everyone",
+          "interpretation": "Shared-space and collective-benefit messaging may resonate."
+        },
+        "b": {
+          "label": "Show exactly how and where to dispose of common items",
+          "interpretation": "Specific practical instructions may be more useful than broad appeals."
+        },
+        "c": {
+          "label": "Explain the consequences of littering and the rules that apply on campus",
+          "interpretation": "Rule-based messaging may resonate; verify policy wording and pair it with accessible bins."
+        }
+      },
+      "crossChecks": [
+        "q5",
+        "q6",
+        "q7",
+        "q10",
+        "q13"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q15",
+      "section": "Make the Change",
+      "construct": "Preferred everyday support",
+      "options": {
+        "a": {
+          "label": "Convenient bins with clear labels wherever students need them",
+          "interpretation": "Prioritize access, placement and understandable sorting cues."
+        },
+        "b": {
+          "label": "Simple reminders and practical instructions at the point of disposal",
+          "interpretation": "Point-of-decision prompts may help translate intent into action."
+        },
+        "c": {
+          "label": "Seeing classmates and campus groups consistently do the right thing",
+          "interpretation": "Visible peer modelling may be useful; avoid shame or blame."
+        }
+      },
+      "crossChecks": [
+        "q3",
+        "q11",
+        "q12",
+        "q16"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    },
+    {
+      "id": "q16",
+      "section": "Make the Change",
+      "construct": "Stated willingness to participate",
+      "options": {
+        "a": {
+          "label": "Unlikely to participate",
+          "interpretation": "The activity may not fit respondents' interests or schedules; reasons were not asked."
+        },
+        "b": {
+          "label": "Might participate, depending on the activity and timing",
+          "interpretation": "Low-friction options and flexible timing may help test engagement."
+        },
+        "c": {
+          "label": "Very likely to participate",
+          "interpretation": "Potential volunteer interest; confirm with sign-ups and attendance."
+        }
+      },
+      "crossChecks": [
+        "q4",
+        "q8",
+        "q12",
+        "q13",
+        "q15"
+      ],
+      "analysisCaveat": "Interpret this as self-reported perception, awareness, preference or intention—not proof of actual behaviour or causation."
+    }
+  ],
+  "sectionAnalysis": [
+    {
+      "id": "the-reality",
+      "label": "The Reality",
+      "questions": [
+        "q1",
+        "q2",
+        "q3",
+        "q4"
+      ],
+      "purpose": "Describe reported visibility, perceived hotspots, stated disposal choices when bins are inconvenient, and peer responses.",
+      "patterns": [
+        {
+          "id": "high_reported_visibility",
+          "when": "q1 option c leads",
+          "meaning": "Frequent reported encounters with improper disposal; pair with q2 to identify perceived hotspots.",
+          "actions": [
+            "Check hotspots directly at different times",
+            "Audit bins in the leading area"
+          ]
+        },
+        {
+          "id": "convenience_barrier",
+          "when": "q3 option a is common and q11 option a is common",
+          "meaning": "Answers are consistent with a convenience or infrastructure barrier.",
+          "actions": [
+            "Audit bin access, capacity, placement and labels",
+            "Pilot a targeted improvement"
+          ]
+        },
+        {
+          "id": "peer_non_intervention",
+          "when": "q4 options a+b exceed option c",
+          "meaning": "More respondents report not intervening than speaking up; reasons are unknown.",
+          "actions": [
+            "Offer respectful, non-confrontational peer prompts",
+            "Avoid blaming or shaming students"
+          ]
+        }
+      ],
+      "cautions": [
+        "Survey reports are not a campus waste audit.",
+        "q2 identifies broad perceived areas, not exact locations."
+      ]
+    },
+    {
+      "id": "what-reaches-you",
+      "label": "What Reaches You?",
+      "questions": [
+        "q5",
+        "q6",
+        "q7",
+        "q8",
+        "q9",
+        "q10"
+      ],
+      "purpose": "Assess reported awareness, message visibility/recall, practical guidance and sorting confidence.",
+      "patterns": [
+        {
+          "id": "awareness_or_visibility_gap",
+          "when": "q5 option c or q7 option a is common",
+          "meaning": "Rules or messages may not be reaching or attracting respondents' attention.",
+          "actions": [
+            "Check placement and clarity",
+            "Make the expected action explicit",
+            "Measure recall after a campaign"
+          ]
+        },
+        {
+          "id": "seen_not_remembered",
+          "when": "q7 option b or q8 option b is common",
+          "meaning": "Messages/events may be noticed without the environmental message being retained.",
+          "actions": [
+            "Emphasize one concrete call-to-action",
+            "Measure recall, not just number of posters"
+          ]
+        },
+        {
+          "id": "practical_guidance_gap",
+          "when": "q9 option a/b and q10 option a/b are common",
+          "meaning": "Responses suggest practical guidance or sorting confidence may need strengthening.",
+          "actions": [
+            "Use item-specific demonstrations",
+            "Use consistent labels that match the actual campus waste system"
+          ]
+        },
+        {
+          "id": "awareness_without_reported_influence",
+          "when": "q5 option a leads and q6 option b leads",
+          "meaning": "Many respondents report awareness but little personal influence from fines; this does not prove policy ineffectiveness.",
+          "actions": [
+            "Pair rule communication with practical guidance and convenient disposal"
+          ]
+        }
+      ],
+      "cautions": [
+        "Compare q5 and q6 because q6 includes an unaware option.",
+        "Awareness and recall do not prove comprehension or behaviour change."
+      ]
+    },
+    {
+      "id": "make-the-change",
+      "label": "Make the Change",
+      "questions": [
+        "q11",
+        "q12",
+        "q13",
+        "q14",
+        "q15",
+        "q16"
+      ],
+      "purpose": "Identify perceived barriers, preferred interventions/channels/messages, everyday supports and stated willingness.",
+      "patterns": [
+        {
+          "id": "infrastructure_first",
+          "when": "q11 option a and/or q12 option a and q15 option a are prominent",
+          "meaning": "Respondents repeatedly prioritize bins, access or labels.",
+          "actions": [
+            "Audit bins and collection schedules",
+            "Prioritize the leading perceived hotspot",
+            "Pair infrastructure with clear instructions"
+          ]
+        },
+        {
+          "id": "education_first",
+          "when": "q11 option b and q12 option b are prominent, with q9/q10 uncertainty",
+          "meaning": "Responses point toward practical education and guidance.",
+          "actions": [
+            "Run a short practical demonstration",
+            "Use clear item-specific visuals",
+            "Check understanding"
+          ]
+        },
+        {
+          "id": "student_led_opportunity",
+          "when": "q12 option c or q15 option c is prominent and q16 option c has meaningful support",
+          "meaning": "There may be an opening for a voluntary student-led pilot.",
+          "actions": [
+            "Invite volunteers",
+            "Run a small activity",
+            "Track sign-ups and actual attendance"
+          ]
+        },
+        {
+          "id": "channel_message_match",
+          "when": "q13 and q14 each have a clear leading option",
+          "meaning": "Use preferred channel and message as a pilot hypothesis, not a proven effective combination.",
+          "actions": [
+            "Pilot the combination",
+            "Track reach, recall and outcomes separately"
+          ]
+        }
+      ],
+      "cautions": [
+        "Preferred intervention is not necessarily the most effective or affordable.",
+        "Stated willingness is not actual participation."
+      ]
+    }
+  ],
+  "overallSynthesis": {
+    "dimensions": [
+      {
+        "id": "problem_visibility",
+        "inputs": [
+          "q1",
+          "q2"
+        ],
+        "meaning": "How often respondents report seeing problems and which broad areas they name."
+      },
+      {
+        "id": "infrastructure",
+        "inputs": [
+          "q3",
+          "q11",
+          "q12",
+          "q15"
+        ],
+        "meaning": "Whether convenience, capacity, labels or bin placement recur across answers."
+      },
+      {
+        "id": "communication_and_knowledge",
+        "inputs": [
+          "q5",
+          "q7",
+          "q8",
+          "q9",
+          "q10"
+        ],
+        "meaning": "Whether messages are noticed/remembered and practical guidance feels adequate."
+      },
+      {
+        "id": "norms_and_participation",
+        "inputs": [
+          "q4",
+          "q12",
+          "q13",
+          "q15",
+          "q16"
+        ],
+        "meaning": "Whether peer responses and student-led activity look promising."
+      }
+    ],
+    "synthesisRules": [
+      {
+        "id": "combined_infrastructure_guidance",
+        "when": "infrastructure_barrier and practical_guidance_gap both appear",
+        "summary": "A combined approach may be warranted: make correct disposal convenient and provide clear instructions at the point of disposal.",
+        "priority": [
+          "Audit bins",
+          "Standardize labels",
+          "Pilot practical guidance"
+        ]
+      },
+      {
+        "id": "communication_reach",
+        "when": "awareness_or_visibility_gap or seen_not_remembered appears",
+        "summary": "Test message visibility and clarity before simply producing more posters.",
+        "priority": [
+          "Choose one action-focused message",
+          "Place it near disposal decisions",
+          "Measure recall"
+        ]
+      },
+      {
+        "id": "student_led_pilot",
+        "when": "student_led_opportunity appears",
+        "summary": "Try a small voluntary student-led pilot; confirm interest through actual sign-ups and attendance.",
+        "priority": [
+          "Recruit volunteers",
+          "Run one limited activity",
+          "Collect feedback"
+        ]
+      },
+      {
+        "id": "mixed_signal",
+        "when": "no rule has enough support or leading options are closely split",
+        "summary": "Do not force a single conclusion. Report the split and consider a low-cost combined pilot or further targeted observation.",
+        "priority": [
+          "Report uncertainty",
+          "Observe locations directly",
+          "Test small alternatives"
+        ]
+      }
+    ],
+    "reportSections": [
+      "Response count and collection period",
+      "Programme/course breakdown with small-group suppression",
+      "The Reality",
+      "What Reaches You?",
+      "Make the Change",
+      "Cross-question patterns",
+      "What students can do",
+      "What college administration can do",
+      "What TheGreenFeed can pilot next",
+      "Limitations"
+    ]
+  },
+  "actionLibrary": {
+    "students": [
+      {
+        "id": "responsible_disposal",
+        "action": "Use an appropriate bin where available; when practical, keep waste until a suitable disposal point is found.",
+        "signals": [
+          "q3 option c is common"
+        ],
+        "caveat": "Do not place all responsibility on students if bins are inaccessible, full or unclear."
+      },
+      {
+        "id": "respectful_peer_prompt",
+        "action": "Use polite, non-confrontational reminders or join voluntary activities.",
+        "signals": [
+          "q4 option b common",
+          "q16 option b/c prominent"
+        ],
+        "caveat": "Avoid confrontation and public shaming."
+      }
+    ],
+    "college": [
+      {
+        "id": "bin_audit",
+        "action": "Audit placement, capacity, overflow, labels and collection schedules in perceived hotspots.",
+        "signals": [
+          "q2 clear leading area",
+          "q3 option a common",
+          "q11 option a common",
+          "q12/q15 option a prominent"
+        ],
+        "caveat": "Validate perceptions with observation before costly changes."
+      },
+      {
+        "id": "sorting_guidance",
+        "action": "Provide consistent, item-specific labels and demonstrations that match actual campus waste handling.",
+        "signals": [
+          "q9/q10 options a or b common",
+          "q12 option b prominent"
+        ],
+        "caveat": "Confirm local collection rules before publishing sorting guidance."
+      },
+      {
+        "id": "rule_clarity",
+        "action": "Make current waste rules and penalties accurate, clear and easy to find.",
+        "signals": [
+          "q5 option b/c common",
+          "q7 option a/b common"
+        ],
+        "caveat": "Confirm wording with the institution."
+      }
+    ],
+    "thegreenfeed": [
+      {
+        "id": "message_pilot",
+        "action": "Pilot one clear message through the leading preferred channel and measure recall.",
+        "signals": [
+          "q13/q14 have clear leading options",
+          "q7 option b common"
+        ],
+        "caveat": "Preference and recall do not prove behaviour change."
+      },
+      {
+        "id": "student_activity",
+        "action": "Run a small voluntary activity and track sign-ups, attendance and feedback.",
+        "signals": [
+          "q12 option c prominent",
+          "q16 option b/c prominent"
+        ],
+        "caveat": "Do not infer attendance from stated willingness."
+      },
+      {
+        "id": "follow_up",
+        "action": "Repeat a short measurement after a pilot and add direct observation where possible.",
+        "signals": [
+          "an intervention has been piloted"
+        ],
+        "caveat": "Without a suitable comparison design, changes cannot be attributed solely to the campaign."
+      }
+    ]
+  },
+  "adminDashboard": {
+    "metrics": [
+      "Total submissions",
+      "Submissions over time",
+      "Programme/course counts",
+      "A/B/C counts and percentages per question",
+      "Section summaries",
+      "Cross-question patterns",
+      "Triggered recommendations",
+      "Sample-size/data-quality warnings"
+    ],
+    "exports": [
+      {
+        "id": "raw_xlsx",
+        "label": "Raw responses (.xlsx)",
+        "contains": [
+          "timestamp",
+          "response id",
+          "profile fields",
+          "all answers"
+        ],
+        "access": "admin only",
+        "sensitive": true
+      },
+      {
+        "id": "analysis_xlsx",
+        "label": "Aggregated analysis (.xlsx)",
+        "contains": [
+          "counts",
+          "percentages",
+          "section summaries",
+          "recommendations",
+          "limitations"
+        ],
+        "access": "admin only",
+        "sensitive": false
+      },
+      {
+        "id": "analysis_json",
+        "label": "Analysis framework (.json)",
+        "contains": [
+          "versioned rules and interpretations"
+        ],
+        "access": "maintainer"
+      }
+    ]
+  },
+  "limitations": [
+    "This is deterministic descriptive analysis, not a validated psychometric instrument or causal model.",
+    "The questionnaire only supports interpretations its wording/options reasonably allow; do not invent unasked reasons.",
+    "Recall, social desirability, selection bias and uneven participation can affect results.",
+    "Respondents are not automatically representative of all PCTE students.",
+    "Report what a pattern is consistent with, not what it proves.",
+    "Claims of improvement require follow-up measurements and preferably direct observation.",
+    "Programme-level comparisons can mislead when group sizes differ or are very small."
+  ]
+}

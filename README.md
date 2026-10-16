@@ -58,6 +58,9 @@ safe to commit. Variables:
 | `SUPABASE_URL` | server only | Supabase Project URL |
 | `SUPABASE_PUBLISHABLE_KEY` | server only | Supabase publishable key (a legacy `anon` key works here if your project has not migrated) |
 | `SUPABASE_SECRET_KEY` | server only | Privileged key for the survey insert route. **Never** prefix with `NEXT_PUBLIC_`. |
+| `ADMIN_SESSION_SECRET` | server only | 32+ random characters; signs the admin session cookie. Required to enable the admin panel. |
+| `ADMIN_PASSWORD_HASH` | server only | Preferred admin credential, `scrypt:<saltHex>:<hashHex>` (see "Admin panel"). |
+| `ADMIN_PASSWORD` | server only | Fallback plaintext admin password, compared in constant time. Use only if a hash is not possible. |
 
 These names match the Vercel project environment exactly. None is prefixed with
 `NEXT_PUBLIC_`, so none is exposed to browser JavaScript; the browser never talks
@@ -234,31 +237,105 @@ Publication was enabled without a persistent limiter, so adding one (either
 option above) remains a recommended follow-up. After launch, treat repeated
 `survey_submissions` inserts as the signal to tune the limit.
 
+## Admin panel
+
+A small, server-rendered admin area at `/admin` lets the owner review collected
+responses and the deterministic analysis without touching the database by hand.
+It is **separate from the public site** and does not change the live survey.
+
+### What it does
+
+- **Overview** (`/admin`) — real totals, latest submission, collection period,
+  instrument versions, submissions by day, and a programme/course breakdown
+  (groups smaller than 5 are combined so individuals cannot be re-identified).
+- **Questions** (`/admin/questions`) — per-question counts, percentages, valid N
+  and missing N, with the permitted interpretation for each option.
+- **Analysis** (`/admin/analysis`) — the rule-based findings: dominance,
+  cross-question patterns, recommendations, and the method/thresholds/limitations
+  used to reach them. Descriptive only — never a single "score" and no causal
+  claims.
+- **Responses** (`/admin/responses`) — a paginated list. Identifying details
+  (name, phone, programme) appear only inside the protected detail view.
+- **Exports** (`/admin/exports`) — on-demand CSV downloads generated server-side:
+  an **aggregate** file (no names/phones) and a **raw** file (every row,
+  including identifying data). Files are UTF-8 CSV with a BOM so Excel opens them
+  correctly; there is no in-browser spreadsheet library.
+
+Nothing in the admin area creates, edits or deletes rows, and every view
+re-authorises the request server-side — the session cookie is never trusted on
+its own.
+
+### Enabling it
+
+The admin area is **disabled** unless configuration is present. Set these as
+environment variables (locally in `.env.local`, and in Vercel → **Project →
+Settings → Environment Variables**), then redeploy:
+
+1. `ADMIN_SESSION_SECRET` — 32+ random characters
+   (e.g. `node -e "console.log(crypto.randomBytes(32).toString('hex'))"`).
+2. `ADMIN_PASSWORD_HASH` — generate it locally and paste the printed value:
+
+   ```bash
+   node scripts/hash-admin-password.mjs "your password"
+   # prints: scrypt:<saltHex>:<hashHex>
+   ```
+
+   (`ADMIN_PASSWORD` — a plaintext fallback, compared in constant time — also
+   works, but the hash is preferred and is what the helper produces.)
+
+No credentials are ever committed; only the variable *names* appear in
+`.env.example`. If `ADMIN_SESSION_SECRET` is missing, or neither password
+variable is set, `/admin` reports that sign-in is not configured and grants
+no access.
+
+### Security notes and limitations
+
+- Access is gated by a single shared password plus a signed, HTTP-only,
+  `same-site=lax`, `secure`-in-production cookie scoped to `/admin`, valid for
+  8 hours. Sign-in is a Server Action, so Next.js verifies the request origin.
+- Exports and every page are re-checked per request; unauthenticated API requests
+  receive HTTP 401.
+- Because the responses contain names and phone numbers, treat any downloaded
+  file as confidential and store it in line with the consent statement and the
+  project's data-protection rules.
+- There is no multi-user accounts, no audit log, and no password reset. If the
+  password is lost, generate a new hash and update the environment variable.
+- The aggregate export never includes names, phone numbers or per-respondent
+  rows; the raw export does, by design.
+
 ## Project structure
 
 ```
 src/
   app/                     routes, layout, global styles
+    admin/                 server-rendered admin panel (login, overview, analysis, …)
+    admin/exports/         CSV export route handlers (raw, aggregate)
   components/
     site/                  header, footer, navigation, section wrappers
     home/                  homepage sections and carousel
     blog/                  blog cards and article layout
     survey/                survey fields and states
+    admin/                 admin chrome, nav, charts and presentational bits
     ui/                    shadcn/ui components
   data/
     blog-posts.ts          typed static blog content
     instagram-posts.ts     local carousel image data
-    survey-questions.ts    approved 16-question schema (unpublished)
+    survey-questions.ts    approved 16-question schema (published)
+    analysis-framework.json/ts   codebook + typed accessor for the analysis
   lib/
     fonts.ts               Instrument Serif + Manrope (next/font/google)
     site.ts                site constants and navigation
+    analysis.ts            deterministic rule-based analysis engine
+    admin/                 server-only auth, data access, CSV, formatting
     supabase/              browser/server Supabase helpers
 public/images/
   campaign/                supplied GreenFeed flyers
   blog/                    blog cover images (supplied)
   about/                   Hannah's supplied portrait
 supabase/migrations/       SQL migrations
+scripts/                   hash-admin-password.mjs, verify-survey-db.mjs
 docs/ASSETS.md             asset inventory
+docs/survey-redesign.md    proposed v4 instrument and codebook (proposal, not live)
 ```
 
 ## Design system
