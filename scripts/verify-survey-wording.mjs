@@ -6,11 +6,12 @@
  *   node scripts/verify-survey-wording.mjs <path-to-TheGreenFeed_16_Question_Survey.md>
  *
  * Compares every question label and every option label in section order, plus
- * the consent question and its three options. Exits non-zero on any mismatch.
- * No secrets involved; reads only the two source files.
+ * the exact consent statement shown on the student-details screen. Exits
+ * non-zero on any mismatch. No secrets involved; reads only the two source
+ * files.
  */
 import { readFileSync } from "node:fs";
-import { surveyQuestions, SURVEY_CONSENT_OPTIONS, SURVEY_CONSENT_QUESTION } from "../src/data/survey-questions.ts";
+import { surveyQuestions, SURVEY_CONSENT_STATEMENT } from "../src/data/survey-questions.ts";
 
 const mdPath = process.argv[2];
 if (!mdPath) {
@@ -75,16 +76,12 @@ for (const dq of docQuestions) {
   });
 }
 
-if (SURVEY_CONSENT_QUESTION !== "Do you agree to take part in this anonymous student survey?") {
-  fail(`CONSENT QUESTION MISMATCH\n  expected: Do you agree to take part in this anonymous student survey?\n  actual:   ${SURVEY_CONSENT_QUESTION}`);
-}
-const consentDoc = [
-  "Yes, I agree to participate.",
-  "No, I do not agree to participate.",
-  "Prefer not to answer.",
-];
-if (JSON.stringify(SURVEY_CONSENT_OPTIONS.map((o) => o.label)) !== JSON.stringify(consentDoc)) {
-  fail(`CONSENT OPTIONS MISMATCH\n  expected: ${JSON.stringify(consentDoc)}\n  actual:   ${JSON.stringify(SURVEY_CONSENT_OPTIONS.map((o) => o.label))}`);
+const expectedConsentStatement =
+  "I agree to participate in this survey and allow my responses to be used for TheGreenFeed's waste-management project at PCTE.";
+if (SURVEY_CONSENT_STATEMENT !== expectedConsentStatement) {
+  fail(
+    `CONSENT STATEMENT MISMATCH\n  expected: ${expectedConsentStatement}\n  actual:   ${SURVEY_CONSENT_STATEMENT}`,
+  );
 }
 
 console.log(`Compared ${docQuestions.length} questions, ${failures} mismatches`);

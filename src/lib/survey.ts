@@ -1,5 +1,6 @@
 import {
   getProfileFieldOptions,
+  isValidSurveyPhone,
   type SurveyAnswers,
   type SurveyAnswerValue,
   type SurveyProfileField,
@@ -81,6 +82,18 @@ export function validateSurveyProfile(
     if (field.type === "short-text" && typeof value === "string") {
       if (field.maxLength && value.length > field.maxLength) {
         errors[field.id] = `Please use ${field.maxLength} characters or fewer.`;
+      }
+      continue;
+    }
+
+    if (field.type === "tel" && typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed.length > 0) {
+        if (field.maxLength && trimmed.length > field.maxLength) {
+          errors[field.id] = `Please use ${field.maxLength} characters or fewer.`;
+        } else if (!isValidSurveyPhone(trimmed)) {
+          errors[field.id] = "Please enter a valid phone number.";
+        }
       }
     }
   }

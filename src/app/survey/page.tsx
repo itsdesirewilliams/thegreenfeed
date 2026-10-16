@@ -9,7 +9,7 @@ import { SURVEY_PUBLISHED, surveyQuestions } from "@/data/survey-questions";
 export const metadata: Metadata = {
   title: "Survey",
   description:
-    "A short, anonymous research survey about waste management at PCTE. Your responses will inform academic PR research and campaign planning.",
+    "A short research survey about waste management at PCTE. We ask for your name and course so responses can be followed up — responses are not anonymous.",
 };
 
 export default function SurveyPage() {
@@ -29,7 +29,7 @@ export default function SurveyPage() {
       <Container className="max-w-3xl py-14 sm:py-16">
         <SectionHeading
           title="Help us understand waste habits."
-          description="A short, anonymous survey about waste management at PCTE — your experiences, what reaches you, and what would help."
+          description="A short survey about waste management at PCTE — your experiences, what reaches you, and what would help. We ask for your name and course, so responses are not anonymous."
         />
 
         <div className="mt-10">

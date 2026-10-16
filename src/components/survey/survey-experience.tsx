@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -24,10 +24,8 @@ import {
 } from "@/components/ui/select";
 import { SurveyField } from "@/components/survey/survey-field";
 import {
-  SURVEY_CONSENT_ACCEPTED_VALUE,
   SURVEY_CONSENT_ID,
-  SURVEY_CONSENT_OPTIONS,
-  SURVEY_CONSENT_QUESTION,
+  SURVEY_CONSENT_STATEMENT,
   SURVEY_PROFILE_FIELDS,
   SURVEY_SECTIONS,
   getProfileFieldOptions,
@@ -46,17 +44,18 @@ import {
 } from "@/lib/survey";
 import { cn } from "@/lib/utils";
 
-type Phase = "intro" | "profile" | "questions" | "success";
+type Phase = "details" | "questions" | "success";
 
 const TOTAL_QUESTIONS = surveyQuestions.length;
 
 /**
- * One-question-at-a-time survey experience: introduction and consent,
- * respondent profile, then the 16 research questions with section labels,
- * progress, back/continue navigation, and a reviewable completion state.
+ * Survey experience: a single student-details screen (full name, course,
+ * optional phone number, required consent checkbox) followed by the 16 research
+ * questions one at a time, with section labels, progress, back/continue
+ * navigation, and a reviewable completion state.
  */
 export function SurveyExperience() {
-  const [phase, setPhase] = useState<Phase>("intro");
+  const [phase, setPhase] = useState<Phase>("details");
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<SurveyAnswers>({});
   const [errors, setErrors] = useState<SurveyFieldErrors>({});
@@ -84,34 +83,17 @@ export function SurveyExperience() {
     });
   }
 
-  const consentAccepted =
-    answers[SURVEY_CONSENT_ID] === SURVEY_CONSENT_ACCEPTED_VALUE;
-  const consentDeclined =
-    answers[SURVEY_CONSENT_ID] === "b" || answers[SURVEY_CONSENT_ID] === "c";
-  /**
-   * The profile phase is skipped entirely while no profile fields are
-   * configured. It returns automatically as soon as verified fields are
-   * restored to SURVEY_PROFILE_FIELDS.
-   */
-  const hasProfileFields = SURVEY_PROFILE_FIELDS.length > 0;
+  const consentAccepted = answers[SURVEY_CONSENT_ID] === true;
 
-  function handleStart() {
-    if (!consentAccepted || submitting) return;
-    setErrors({});
-    setSubmitError(null);
-    if (hasProfileFields) {
-      setPhase("profile");
-    } else {
-      setIndex(0);
-      setPhase("questions");
-    }
-  }
-
-  function handleProfileContinue() {
+  function handleDetailsContinue() {
     if (submitting) return;
-    const profileErrors = validateSurveyProfile(SURVEY_PROFILE_FIELDS, answers);
-    setErrors(profileErrors);
-    if (hasErrors(profileErrors)) return;
+    const detailsErrors = validateSurveyProfile(SURVEY_PROFILE_FIELDS, answers);
+    if (!consentAccepted) {
+      detailsErrors[SURVEY_CONSENT_ID] =
+        "Please tick the consent box to continue.";
+    }
+    setErrors(detailsErrors);
+    if (hasErrors(detailsErrors)) return;
     setSubmitError(null);
     setPhase("questions");
     setIndex(0);
@@ -122,11 +104,10 @@ export function SurveyExperience() {
     setSubmitError(null);
     if (phase === "questions") {
       if (index === 0) {
-        if (hasProfileFields) setPhase("profile");
-        else setPhase("intro");
-      } else setIndex(index - 1);
-    } else if (phase === "profile") {
-      setPhase("intro");
+        setPhase("details");
+      } else {
+        setIndex(index - 1);
+      }
     }
   }
 
@@ -143,14 +124,15 @@ export function SurveyExperience() {
     if (submitting) return;
 
     const questionErrors = validateSurveyAnswers(surveyQuestions, answers);
-    const profileErrors = validateSurveyProfile(SURVEY_PROFILE_FIELDS, answers);
-    const allErrors = { ...profileErrors, ...questionErrors };
+    const detailsErrors = validateSurveyProfile(SURVEY_PROFILE_FIELDS, answers);
+    const allErrors = { ...detailsErrors, ...questionErrors };
 
     if (!consentAccepted) {
-      setErrors(allErrors);
+      setErrors({ ...allErrors, [SURVEY_CONSENT_ID]: "Consent is required." });
       setSubmitError(
         "Consent is required before your response can be submitted.",
       );
+      setPhase("details");
       return;
     }
 
@@ -168,14 +150,8 @@ export function SurveyExperience() {
     setSubmitError(null);
 
     try {
-      // The client-side consent choice is "a" at this point. It is stored as
-      // consent = true (the stored decision to participate); the database
-      // schema is unchanged.
-      // Success is shown only after the server confirms the insert.
-      // The client-side consent choice is "a" at this point. It is stored as
-      // consent = true (the stored decision to participate); the database
-      // schema is unchanged. With no profile fields configured, `answers`
-      // contains only research-answer keys and consent.
+      // The consent checkbox is stored as the boolean decision to participate;
+      // the name, course and optional phone number ride along in `answers`.
       // Success is shown only after the server confirms the insert.
       await submitSurveyAnswers({
         ...answers,
@@ -194,10 +170,12 @@ export function SurveyExperience() {
   }
 
   /* ---------------------------------------------------------------------- */
-  /* Intro + consent                                                        */
+  /* Student details + consent                                              */
   /* ---------------------------------------------------------------------- */
 
-  if (phase === "intro") {
+  if (phase === "details") {
+    const consentError = errors[SURVEY_CONSENT_ID];
+
     return (
       <div
         ref={stepRef}
@@ -208,12 +186,15 @@ export function SurveyExperience() {
           <h2 className="text-title font-semibold text-forest">Before we begin</h2>
           <ul className="flex flex-col gap-3">
             {[
-              "The survey asks about what you experience at PCTE, what information reaches you, and what changes could help. Responses support a student-focused public-relations campaign.",
-              "Participation is voluntary, and you can close this page at any time before submitting.",
-              "Responses are anonymous. Please do not include your name, roll number, phone number, or email address.",
-              "It should take about 2–3 minutes; completion time will be validated by a pilot test.",
+              "This survey asks what you experience at PCTE, what information reaches you, and what changes could help. Responses support a student-focused public-relations campaign.",
+              "We ask for your full name, your course, and an optional phone number. Your responses are not anonymous — these details are stored alongside your answers and used only for TheGreenFeed's waste-management project at PCTE.",
+              "Participation is voluntary; you can close this page at any time before you submit.",
+              "It should take about 2–3 minutes.",
             ].map((point) => (
-              <li key={point} className="flex gap-3 text-sm text-ink/80 sm:text-base">
+              <li
+                key={point}
+                className="flex gap-3 text-sm text-ink/80 sm:text-base"
+              >
                 <span
                   aria-hidden="true"
                   className="mt-2 size-1.5 shrink-0 rounded-full bg-lime ring-1 ring-forest/20"
@@ -222,82 +203,6 @@ export function SurveyExperience() {
               </li>
             ))}
           </ul>
-        </div>
-
-        <fieldset className="rounded-xl border border-hairline bg-cream px-4 py-4 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-forest">
-          <legend className="px-1 text-sm font-semibold text-forest sm:text-base">
-            {SURVEY_CONSENT_QUESTION}
-          </legend>
-          <RadioGroup
-            value={typeof answers[SURVEY_CONSENT_ID] === "string"
-              ? (answers[SURVEY_CONSENT_ID] as string)
-              : ""}
-            onValueChange={(next) => setAnswer(SURVEY_CONSENT_ID, String(next))}
-            className="mt-3 flex flex-col gap-2.5"
-          >
-            {SURVEY_CONSENT_OPTIONS.map((option) => (
-              <label
-                key={option.value}
-                className="group/option flex cursor-pointer items-start gap-3 rounded-xl border border-hairline bg-white px-4 py-3 transition-colors hover:border-forest/50 hover:bg-secondary has-data-checked:border-forest has-data-checked:bg-lime/15"
-              >
-                <span
-                  aria-hidden="true"
-                  className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-forest group-has-data-checked:bg-forest group-has-data-checked:text-lime"
-                >
-                  {option.value.toUpperCase()}
-                </span>
-                <RadioGroupItem value={option.value} className="sr-only" />
-                <span className="text-sm text-ink sm:text-base">
-                  {option.label}
-                </span>
-              </label>
-            ))}
-          </RadioGroup>
-        </fieldset>
-
-        {consentDeclined ? (
-          <div
-            role="status"
-            className="rounded-xl bg-cream px-4 py-3 text-sm text-ink/80 ring-1 ring-hairline"
-          >
-            You chose not to participate or preferred not to answer. The survey
-            ends here — nothing has been saved. If this was a mistake, you can
-            change your selection above.
-          </div>
-        ) : null}
-
-        <Button
-          size="lg"
-          className="h-11 w-full px-6 text-base sm:w-fit sm:self-start"
-          onClick={handleStart}
-          disabled={!consentAccepted}
-        >
-          Start the survey
-          <ArrowRight aria-hidden="true" />
-        </Button>
-      </div>
-    );
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /* Respondent profile                                                     */
-  /* ---------------------------------------------------------------------- */
-
-  if (phase === "profile") {
-    return (
-      <div
-        ref={stepRef}
-        tabIndex={-1}
-        className="flex flex-col gap-6 rounded-2xl bg-white p-6 ring-1 ring-forest/10 outline-none sm:p-8"
-      >
-        <div className="flex flex-col gap-2">
-          <h2 className="text-title font-semibold text-forest">
-            A few details, no names
-          </h2>
-          <p className="text-sm text-muted-ink">
-            These details help analyse responses by group. No names, roll
-            numbers, or contact details are collected.
-          </p>
         </div>
 
         <div className="flex flex-col gap-5">
@@ -309,61 +214,33 @@ export function SurveyExperience() {
             const descriptionId = field.description
               ? `${field.id}-description`
               : undefined;
+            const describedBy = errorId
+              ? descriptionId
+                ? `${descriptionId} ${errorId}`
+                : errorId
+              : descriptionId;
+
+            const labelContent = (
+              <>
+                {field.label}
+                {field.required ? (
+                  <span className="ml-1 text-destructive" aria-hidden="true">
+                    *
+                  </span>
+                ) : (
+                  <span className="ml-2 text-xs font-normal text-muted-ink">
+                    Optional
+                  </span>
+                )}
+              </>
+            );
 
             return (
               <div key={field.id} className="flex flex-col gap-2">
-                {field.type === "short-text" ? (
-                  <>
-                    <label
-                      htmlFor={`${field.id}-input`}
-                      className="text-sm font-medium text-forest"
-                    >
-                      {field.label}
-                      {field.required ? (
-                        <span className="ml-1 text-destructive" aria-hidden="true">
-                          *
-                        </span>
-                      ) : (
-                        <span className="ml-2 text-xs font-normal text-muted-ink">
-                          Optional
-                        </span>
-                      )}
-                    </label>
-                    {field.description ? (
-                      <p id={descriptionId} className="text-sm text-muted-ink">
-                        {field.description}
-                      </p>
-                    ) : null}
-                    <Input
-                      id={`${field.id}-input`}
-                      value={typeof value === "string" ? value : ""}
-                      maxLength={field.maxLength}
-                      placeholder={field.placeholder}
-                      disabled={submitting}
-                      aria-invalid={error ? true : undefined}
-                      aria-describedby={
-                        errorId
-                          ? `${descriptionId ? `${descriptionId} ` : ""}${errorId}`
-                          : descriptionId
-                      }
-                      onChange={(event) =>
-                        setAnswer(field.id, event.target.value)
-                      }
-                    />
-                  </>
-                ) : (
+                {field.type === "select" ? (
                   <>
                     <span className="text-sm font-medium text-forest">
-                      {field.label}
-                      {field.required ? (
-                        <span className="ml-1 text-destructive" aria-hidden="true">
-                          *
-                        </span>
-                      ) : (
-                        <span className="ml-2 text-xs font-normal text-muted-ink">
-                          Optional
-                        </span>
-                      )}
+                      {labelContent}
                     </span>
                     {field.description ? (
                       <p id={descriptionId} className="text-sm text-muted-ink">
@@ -381,16 +258,14 @@ export function SurveyExperience() {
                     >
                       <SelectTrigger
                         aria-label={field.label}
-                        aria-describedby={
-                          errorId
-                            ? `${descriptionId ? `${descriptionId} ` : ""}${errorId}`
-                            : descriptionId
-                        }
+                        aria-describedby={describedBy}
                         className="w-full"
                       >
                         <SelectValue
                           placeholder={
-                            field.required ? "Select an option…" : "Optional — select…"
+                            field.required
+                              ? "Select an option…"
+                              : "Optional — select…"
                           }
                         />
                       </SelectTrigger>
@@ -400,7 +275,10 @@ export function SurveyExperience() {
                               <SelectGroup key={group.label}>
                                 <SelectLabel>{group.label}</SelectLabel>
                                 {group.options.map((option) => (
-                                  <SelectItem key={option.value} value={option.value}>
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
                                     {option.label}
                                   </SelectItem>
                                 ))}
@@ -414,9 +292,41 @@ export function SurveyExperience() {
                       </SelectContent>
                     </Select>
                   </>
+                ) : (
+                  <>
+                    <label
+                      htmlFor={`${field.id}-input`}
+                      className="text-sm font-medium text-forest"
+                    >
+                      {labelContent}
+                    </label>
+                    {field.description ? (
+                      <p id={descriptionId} className="text-sm text-muted-ink">
+                        {field.description}
+                      </p>
+                    ) : null}
+                    <Input
+                      id={`${field.id}-input`}
+                      type={field.type === "tel" ? "tel" : "text"}
+                      inputMode={field.type === "tel" ? "tel" : undefined}
+                      value={typeof value === "string" ? value : ""}
+                      maxLength={field.maxLength}
+                      placeholder={field.placeholder}
+                      disabled={submitting}
+                      aria-invalid={error ? true : undefined}
+                      aria-describedby={describedBy}
+                      onChange={(event) =>
+                        setAnswer(field.id, event.target.value)
+                      }
+                    />
+                  </>
                 )}
                 {error ? (
-                  <p id={errorId} role="alert" className="text-sm text-destructive">
+                  <p
+                    id={errorId}
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
                     {error}
                   </p>
                 ) : null}
@@ -425,25 +335,45 @@ export function SurveyExperience() {
           })}
         </div>
 
-        <div className="flex items-center justify-between gap-3">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            disabled={submitting}
-            className="h-11 px-5"
-          >
-            <ArrowLeft aria-hidden="true" />
-            Back
-          </Button>
-          <Button
-            onClick={handleProfileContinue}
-            disabled={submitting}
-            className="h-11 px-6"
-          >
-            Continue
-            <ArrowRight aria-hidden="true" />
-          </Button>
-        </div>
+        <fieldset className="rounded-xl border border-hairline bg-cream px-4 py-4">
+          <legend className="sr-only">Consent</legend>
+          <label className="flex cursor-pointer items-start gap-3">
+            <Checkbox
+              checked={consentAccepted}
+              disabled={submitting}
+              aria-invalid={consentError ? true : undefined}
+              aria-describedby={
+                consentError ? `${SURVEY_CONSENT_ID}-error` : undefined
+              }
+              onCheckedChange={(next) =>
+                setAnswer(SURVEY_CONSENT_ID, next === true)
+              }
+              className="mt-0.5"
+            />
+            <span className="text-sm text-ink sm:text-base">
+              {SURVEY_CONSENT_STATEMENT}
+            </span>
+          </label>
+          {consentError ? (
+            <p
+              id={`${SURVEY_CONSENT_ID}-error`}
+              role="alert"
+              className="mt-2 text-sm text-destructive"
+            >
+              {consentError}
+            </p>
+          ) : null}
+        </fieldset>
+
+        <Button
+          size="lg"
+          className="h-11 w-full px-6 text-base sm:w-fit sm:self-start"
+          onClick={handleDetailsContinue}
+          disabled={submitting}
+        >
+          Continue to Survey
+          <ArrowRight aria-hidden="true" />
+        </Button>
       </div>
     );
   }
@@ -490,7 +420,8 @@ export function SurveyExperience() {
         </div>
 
         <p className="text-xs text-muted-ink">
-          Your answers stay anonymous and are used only in aggregate analysis.
+          Your response, and the details you provided, are stored securely and
+          used only for TheGreenFeed&apos;s waste-management project at PCTE.
         </p>
       </div>
     );
@@ -503,9 +434,9 @@ export function SurveyExperience() {
   const question = surveyQuestions[index];
   const sectionNumber =
     SURVEY_SECTIONS.findIndex((section) => section.title === question.section) + 1;
-  const sectionSubtitle =
-    SURVEY_SECTIONS.find((section) => section.title === question.section)
-      ?.subtitle;
+  const sectionSubtitle = SURVEY_SECTIONS.find(
+    (section) => section.title === question.section,
+  )?.subtitle;
   const sectionTitle = question.section;
   const isLast = index === TOTAL_QUESTIONS - 1;
   const answered = !isEmptyAnswer(answers[question.id]);
@@ -521,10 +452,7 @@ export function SurveyExperience() {
           <p className="text-sm font-medium text-muted-ink">
             Section {sectionNumber} · {sectionTitle}
           </p>
-          <p
-            className="text-sm font-semibold text-forest"
-            aria-live="polite"
-          >
+          <p className="text-sm font-semibold text-forest" aria-live="polite">
             Question {index + 1} of {TOTAL_QUESTIONS}
           </p>
         </div>

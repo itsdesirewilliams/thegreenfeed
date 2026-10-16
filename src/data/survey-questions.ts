@@ -2,22 +2,39 @@
  * TheGreenFeed — approved 16-question campus waste-management survey
  * (PR for Change — Waste Management at PCTE Group of Institutes).
  *
- * SOURCE OF TRUTH: `TheGreenFeed_16_Question_Survey.md` (version v2).
- * Every question and option below is transcribed from that document exactly —
- * do not reword, reorder, or invent questions or options.
+ * The 16 questions and options below are transcribed verbatim from
+ * `TheGreenFeed_16_Question_Survey.md` (version v2) — do not reword, reorder,
+ * or invent questions or options.
+ *
+ * A single student-details screen (full name, course/programme, an optional
+ * phone number, and a required consent checkbox) precedes the questions.
+ * Because a name is collected, responses are NOT anonymous: identifying
+ * details are stored alongside the answers. See README.
  *
  * Option values are the canonical letters "a" / "b" / "c" (they match the
  * questionnaire codes); the human-readable labels act as the codebook for
  * later aggregate analysis. Treat responses as categorical data; never sum
  * them into a single score or claim causal effects from self-reports.
  *
- * `SURVEY_PUBLISHED` is `true`: the owner reviewed the complete experience and
- * explicitly approved publication. See README ("Survey publication").
+ * `SURVEY_PUBLISHED` is `true`: the owner approved publication and then
+ * authorised adding the student-details screen.
  *
  * Supported question types (schema general, current instrument single-choice):
  * short-text, long-text, single-choice, multiple-choice, yes-no.
+ *
+ * PAYLOAD CONTRACT / SCHEMA VERSION
+ * - `v3` (current) adds the student-details keys `profile_full_name`,
+ *   `profile_programme` and `profile_phone` on top of `consent` and the 16
+ *   research answers.
+ * - `v2` (legacy) is the same payload without a name or phone. The server keeps
+ *   accepting `v2` during rollout so respondents who loaded the previous page
+ *   are not turned away, and records each row under the version the client
+ *   declared.
  */
-export const SURVEY_SCHEMA_VERSION = "v2";
+export const SURVEY_SCHEMA_VERSION = "v3";
+
+/** Older payload versions still accepted during rollout (see the note above). */
+export const SURVEY_LEGACY_SCHEMA_VERSIONS = ["v2"] as const;
 
 export const SURVEY_PUBLISHED = true;
 
@@ -367,31 +384,22 @@ export const surveyQuestions: SurveyQuestion[] = [
 /* Consent                                                                  */
 /* ------------------------------------------------------------------------ */
 
-/** Stable id under which the consent choice is keyed in `answers`. */
+/** Stable id under which the consent decision is keyed in `answers`. */
 export const SURVEY_CONSENT_ID = "consent";
 
 /**
- * The consent question and its options, exactly as specified in the source
- * document. Only option "a" permits the respondent to continue; choosing "b"
- * or "c" stops the survey without storing research answers.
+ * The exact consent statement shown as a required checkbox on the
+ * student-details screen. The response is recorded only when the respondent
+ * ticks it; the accepted decision is stored as `consent: true`.
  */
-export const SURVEY_CONSENT_QUESTION =
-  "Do you agree to take part in this anonymous student survey?";
-
-export const SURVEY_CONSENT_OPTIONS = [
-  { value: "a", label: "Yes, I agree to participate." },
-  { value: "b", label: "No, I do not agree to participate." },
-  { value: "c", label: "Prefer not to answer." },
-] as const satisfies readonly SurveyOption[];
-
-/** The only consent choice that permits continuation. */
-export const SURVEY_CONSENT_ACCEPTED_VALUE = "a";
+export const SURVEY_CONSENT_STATEMENT =
+  "I agree to participate in this survey and allow my responses to be used for TheGreenFeed's waste-management project at PCTE.";
 
 /* ------------------------------------------------------------------------ */
-/* Respondent profile (minimum useful, non-identifying)                     */
+/* Student details (identifying)                                            */
 /* ------------------------------------------------------------------------ */
 
-export type SurveyProfileFieldType = "select" | "short-text";
+export type SurveyProfileFieldType = "select" | "short-text" | "tel";
 
 /**
  * A labelled, non-selectable group of options inside a select field. Used for
@@ -402,6 +410,17 @@ export type SurveyProfileOptionGroup = {
   options: SurveyOption[];
 };
 
+/**
+ * Permissive phone-number shape: digits with optional `+`, spaces, dashes,
+ * dots and parentheses. Deliberately not country-specific.
+ */
+export const SURVEY_PHONE_PATTERN = /^[+0-9()\-.\s]{6,20}$/;
+
+/** True when the (already trimmed) value looks like a usable phone number. */
+export function isValidSurveyPhone(value: string): boolean {
+  return SURVEY_PHONE_PATTERN.test(value);
+}
+
 export type SurveyProfileField = {
   /** Stable identifier used as the answer key. */
   id: string;
@@ -409,6 +428,12 @@ export type SurveyProfileField = {
   description?: string;
   type: SurveyProfileFieldType;
   required: boolean;
+  /**
+   * When set, the server only treats the field as required for submissions at
+   * this schema version or later. Lets legacy (`v2`) payloads stay valid during
+   * rollout without weakening the current (`v3`) contract.
+   */
+  requiredFrom?: string;
   options?: SurveyOption[];
   /** Grouped display options for a select field (alternative to `options`). */
   groups?: SurveyProfileOptionGroup[];
@@ -429,6 +454,17 @@ export function getProfileFieldOptions(
 }
 
 export const SURVEY_PROFILE_FIELDS: SurveyProfileField[] = [
+  {
+    id: "profile_full_name",
+    label: "Full name",
+    type: "short-text",
+    required: true,
+    // Required from v3 onward; legacy v2 payloads may omit it during rollout.
+    requiredFrom: SURVEY_SCHEMA_VERSION,
+    maxLength: 80,
+    placeholder: "Your full name",
+  },
+
   /**
    * Programme / course — verified against the PCTE website (programme list
    * supplied by the owner). The displayed names are the exact course names;
@@ -489,10 +525,19 @@ export const SURVEY_PROFILE_FIELDS: SurveyProfileField[] = [
     ],
   },
 
+  {
+    id: "profile_phone",
+    label: "Phone number",
+    type: "tel",
+    required: false,
+    maxLength: 20,
+    placeholder: "+91 98765 43210",
+  },
+
   /**
-   * NOT COLLECTED — section/batch and admission cohort remain unverified. The
-   * supplied source verifies programme names only. Restore a field here once
-   * its options are confirmed against a PCTE source:
+   * NOT COLLECTED — class/section/batch and admission-year cohort were never
+   * verified against a PCTE source, so they are intentionally omitted. Restore
+   * a field here only once its options are confirmed:
    *
    * {
    *   id: "profile_section",
@@ -513,8 +558,7 @@ export const SURVEY_PROFILE_FIELDS: SurveyProfileField[] = [
    * },
    *
    * Notes: admission year is a cohort label, NOT equivalent to current year of
-   * study. Never ask for names, roll numbers, phone numbers, or email
-   * addresses. Changing option values after publication would split analysis.
+   * study. Changing option values after publication would split analysis.
    */
 ];
 
