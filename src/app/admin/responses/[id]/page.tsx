@@ -12,7 +12,6 @@ import { load } from "@/lib/admin/load";
 import {
   SURVEY_CONSENT_ID,
   SURVEY_PROFILE_FIELDS,
-  SYNTHETIC_LABEL,
   getInstrumentQuestions,
   getProfileFieldOptions,
   isSupportedSurveyVersion,
@@ -93,21 +92,6 @@ export default async function AdminResponseDetailPage(props: {
           </Link>
         }
       />
-
-      {response.isSynthetic ? (
-        <Alert variant="destructive">
-          <ShieldAlert />
-          <AlertTitle>{SYNTHETIC_LABEL} — not a real participant</AlertTitle>
-          <AlertDescription>
-            This row was imported as synthetic test data
-            {response.syntheticBatchId
-              ? ` (batch ${response.syntheticBatchId})`
-              : ""}
-            . It is included in the analysis and exports but must never be
-            presented as a genuine response.
-          </AlertDescription>
-        </Alert>
-      ) : null}
 
       <Alert variant="destructive">
         <ShieldAlert />

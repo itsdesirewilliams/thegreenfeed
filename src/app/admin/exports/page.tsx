@@ -22,7 +22,7 @@ export default async function AdminExportsPage() {
 
       <Panel
         title="Aggregate analysis"
-        description="Counts, percentages, patterns and recommendations, including labelled synthetic test rows. No names, phone numbers or per-respondent rows."
+        description="Counts, percentages, patterns and recommendations. No names, phone numbers or per-respondent rows."
       >
         <a
           href="/admin/exports/aggregate"
@@ -32,15 +32,14 @@ export default async function AdminExportsPage() {
           Download analysis CSV
         </a>
         <p className="mt-3 text-xs text-muted-ink">
-          Reports genuine and synthetic counts separately, so synthetic rows are
-          never presented as real participants. Programme groups smaller than{" "}
-          {SMALL_GROUP_THRESHOLD} are combined before export.
+          Programme groups smaller than {SMALL_GROUP_THRESHOLD} are combined
+          before export.
         </p>
       </Panel>
 
       <Panel
         title="Raw responses (sensitive)"
-        description="Every stored row, genuine and synthetic, including identifying details and each answer code. Handle only in line with consent and data-protection rules."
+        description="Every stored row, including identifying details and each answer code. Handle only in line with consent and data-protection rules."
       >
         <a
           href="/admin/exports/raw"
@@ -50,8 +49,8 @@ export default async function AdminExportsPage() {
           Download raw CSV
         </a>
         <p className="mt-3 text-xs text-muted-ink">
-          Columns: id, created_at, schema_version, is_synthetic,
-          synthetic_batch_id, name, programme, phone, consent, then q1–q16.
+          Columns: id, created_at, schema_version, name, programme, phone,
+          consent, then q1–q16.
         </p>
       </Panel>
     </div>

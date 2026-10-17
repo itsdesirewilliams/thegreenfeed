@@ -15,7 +15,7 @@ import type { SurveyInstrument, SurveyQuestion, SurveySection } from "./types";
  * `getInstrumentQuestions` / `getInstrumentSections` throw for a version that
  * is not in `SURVEY_INSTRUMENT_VERSIONS`, so a mis-tagged row cannot be
  * analysed or rendered with the wrong questionnaire. Callers that must handle
- * stored rows of unknown provenance check `isSupportedSurveyVersion` first.
+ * stored rows with an unrecognised version check `isSupportedSurveyVersion` first.
  */
 
 export const CURRENT_SURVEY_VERSION = "v4";

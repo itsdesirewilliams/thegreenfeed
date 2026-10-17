@@ -33,59 +33,7 @@ export type AnalysisRow = {
   created_at: string;
   schema_version: string;
   answers: Record<string, unknown>;
-  /**
-   * Provenance marker. Synthetic test rows are analysed alongside genuine rows
-   * but remain distinguishable; `undefined` is treated as genuine so rows read
-   * before the provenance columns existed are never miscounted.
-   */
-  is_synthetic?: boolean;
-  /** Groups one synthetic import run; `null`/`undefined` for genuine rows. */
-  synthetic_batch_id?: string | null;
 };
-
-/**
- * Dataset-level genuine/synthetic split. Counts over the rows handed to the
- * engine, independent of which instrument version is selected for analysis.
- */
-export type ProvenanceSummary = {
-  total: number;
-  genuine: number;
-  synthetic: number;
-  includesSynthetic: boolean;
-  syntheticSharePct: number;
-  syntheticBatches: { batchId: string | null; count: number }[];
-};
-
-export function isSyntheticRow(row: AnalysisRow): boolean {
-  return row.is_synthetic === true;
-}
-
-export function summariseProvenance(rows: AnalysisRow[]): ProvenanceSummary {
-  const batches = new Map<string, number>();
-  let synthetic = 0;
-
-  for (const row of rows) {
-    if (!isSyntheticRow(row)) continue;
-    synthetic += 1;
-    const key = row.synthetic_batch_id ?? "__unbatched__";
-    batches.set(key, (batches.get(key) ?? 0) + 1);
-  }
-
-  const total = rows.length;
-  return {
-    total,
-    genuine: total - synthetic,
-    synthetic,
-    includesSynthetic: synthetic > 0,
-    syntheticSharePct: total ? (synthetic / total) * 100 : 0,
-    syntheticBatches: [...batches.entries()]
-      .map(([key, count]) => ({
-        batchId: key === "__unbatched__" ? null : key,
-        count,
-      }))
-      .sort((a, b) => b.count - a.count),
-  };
-}
 
 export type OptionCount = {
   value: string;
@@ -145,16 +93,6 @@ export type Recommendation = {
 
 export type DataQuality = {
   totalResponses: number;
-  /** Genuine submissions only (totalResponses minus syntheticResponses). */
-  genuineResponses: number;
-  /** Synthetic test rows included in this dataset. */
-  syntheticResponses: number;
-  /** True when at least one synthetic row is included. */
-  includesSynthetic: boolean;
-  /** Synthetic share of the whole dataset, as a percentage. */
-  syntheticSharePct: number;
-  /** Synthetic rows grouped by import batch. */
-  syntheticBatches: { batchId: string | null; count: number }[];
   analysedResponses: number;
   /** The instrument version the figures below were computed from. */
   analysedVersion: string;
@@ -1294,7 +1232,6 @@ function buildDataQuality(
 
   const minimumN = framework.method.dominance.minimumNForInterpretiveLanguage;
   const total = rows.length;
-  const provenance = summariseProvenance(rows);
   let sampleWarning: string | null = null;
   if (total === 0) {
     sampleWarning = "No responses have been collected yet.";
@@ -1318,11 +1255,6 @@ function buildDataQuality(
 
   return {
     totalResponses: total,
-    genuineResponses: provenance.genuine,
-    syntheticResponses: provenance.synthetic,
-    includesSynthetic: provenance.includesSynthetic,
-    syntheticSharePct: provenance.syntheticSharePct,
-    syntheticBatches: provenance.syntheticBatches,
     analysedResponses: analysed,
     analysedVersion: version,
     excludedVersions: all.filter((entry) => entry.version !== version),

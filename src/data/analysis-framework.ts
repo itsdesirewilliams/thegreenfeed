@@ -131,7 +131,7 @@ const FRAMEWORKS: Record<string, AnalysisFramework> = {
 /**
  * The codebook for a stored `schema_version`. Throws for an unknown version
  * instead of falling back to the current (v4) codebook, so rows of unknown
- * provenance are never analysed with the wrong interpretations. Callers should
+ * version are never analysed with the wrong interpretations. Callers should
  * check `isSupportedSurveyVersion` before asking for a framework.
  */
 export function getAnalysisFramework(version: string): AnalysisFramework {

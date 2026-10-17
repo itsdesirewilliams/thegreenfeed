@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
-import { AdminPageHeader, Bars, Panel, ProvenanceNotice, VersionNotice } from "@/components/admin/bits";
+import { AdminPageHeader, Bars, Panel, VersionNotice } from "@/components/admin/bits";
 import { ErrorPanel } from "@/components/admin/error-panel";
 import { requireAdmin } from "@/lib/admin/auth";
 import { fetchAllRows } from "@/lib/admin/data";
@@ -36,19 +36,13 @@ export default async function AdminQuestionsPage() {
     <div className="flex flex-col gap-6">
       <AdminPageHeader
         title="Question distributions"
-        description="Counts and percentages per option, over genuine submissions and labelled synthetic test rows together. Missing or invalid answers are excluded from the valid denominator and shown separately. Percentages are rounded; the letters are categorical, never summed."
+        description="Counts and percentages per option, over all stored responses. Missing or invalid answers are excluded from the valid denominator and shown separately. Percentages are rounded; the letters are categorical, never summed."
       />
 
       <VersionNotice
         analysedVersion={analysis.dataQuality.analysedVersion}
         excludedVersions={analysis.dataQuality.excludedVersions}
         unsupportedWarning={analysis.dataQuality.unsupportedWarning}
-      />
-
-      <ProvenanceNotice
-        genuine={analysis.dataQuality.genuineResponses}
-        synthetic={analysis.dataQuality.syntheticResponses}
-        sharePct={analysis.dataQuality.syntheticSharePct}
       />
 
       {analysis.dataQuality.sampleWarning ? (

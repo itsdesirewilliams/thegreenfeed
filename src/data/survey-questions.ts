@@ -42,13 +42,6 @@ export {
 } from "./survey/registry";
 
 export {
-  SYNTHETIC_COLUMN,
-  SYNTHETIC_BATCH_COLUMN,
-  SYNTHETIC_LABEL,
-  SYNTHETIC_INCLUDED_NOTE,
-} from "./survey/provenance";
-
-export {
   SURVEY_CONSENT_ID,
   SURVEY_CONSENT_STATEMENT,
   SURVEY_PHONE_PATTERN,

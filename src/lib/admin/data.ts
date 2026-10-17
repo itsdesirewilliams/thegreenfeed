@@ -4,8 +4,6 @@ import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import type { AnalysisRow } from "@/lib/analysis";
 import {
   SURVEY_PROFILE_FIELDS,
-  SYNTHETIC_COLUMN,
-  SYNTHETIC_BATCH_COLUMN,
   getProfileFieldOptions,
 } from "@/data/survey-questions";
 
@@ -51,38 +49,8 @@ function makeClient() {
   }
 }
 
-type ProvenanceState = "unknown" | "ready" | "missing";
-let provenanceState: ProvenanceState = "unknown";
-
 /**
- * Detects (once, cached) whether the synthetic-provenance columns exist. They
- * are added by the provenance migration; until it is applied there can be no
- * synthetic rows, so reading genuine-only is simply a no-op filter.
- */
-async function detectProvenance(
-  client: ReturnType<typeof createAdminSupabaseClient>,
-): Promise<boolean> {
-  if (provenanceState !== "unknown") return provenanceState === "ready";
-  const { error } = await client
-    .from("survey_submissions")
-    .select(SYNTHETIC_COLUMN)
-    .limit(1);
-  provenanceState = error ? "missing" : "ready";
-  return provenanceState === "ready";
-}
-
-/** True when the synthetic-provenance columns are present in the database. */
-export async function isProvenanceReady(): Promise<boolean> {
-  return detectProvenance(makeClient());
-}
-
-/**
- * Fetches every stored response (capped) for server-side aggregation, genuine
- * and synthetic alike. Synthetic rows are included so the combined dataset can
- * be exercised end to end, but they stay distinguishable: once the provenance
- * columns exist each row carries `is_synthetic` / `synthetic_batch_id` so every
- * view and export can label provenance. Before the migration there can be no
- * synthetic rows, so reading without the columns is a no-op.
+ * Fetches every stored response (capped) for server-side aggregation.
  */
 export async function fetchAllRows(): Promise<AnalysisRow[]> {
   const client = makeClient();
@@ -108,98 +76,12 @@ export async function fetchAllRows(): Promise<AnalysisRow[]> {
         schema_version: String(row.schema_version ?? "unknown"),
         created_at: String(row.created_at ?? ""),
         answers: (row.answers ?? {}) as Record<string, unknown>,
-        is_synthetic: row[SYNTHETIC_COLUMN] === true,
-        synthetic_batch_id:
-          row[SYNTHETIC_BATCH_COLUMN] === null ||
-          row[SYNTHETIC_BATCH_COLUMN] === undefined
-            ? null
-            : String(row[SYNTHETIC_BATCH_COLUMN]),
       });
     }
     if (data.length < FETCH_PAGE_SIZE) break;
   }
 
   return rows;
-}
-
-export type SyntheticRow = {
-  id: string;
-  createdAt: string;
-  schemaVersion: string;
-  batchId: string | null;
-};
-
-export type SyntheticBatch = {
-  batchId: string | null;
-  count: number;
-  earliestAt: string | null;
-  latestAt: string | null;
-};
-
-export type SyntheticData = {
-  /** False when the provenance migration has not been applied yet. */
-  ready: boolean;
-  rows: SyntheticRow[];
-  batches: SyntheticBatch[];
-};
-
-/**
- * Fetches synthetic test rows only, for the labelled admin testing view. Never
- * used by research analysis or exports.
- */
-export async function fetchSyntheticRows(): Promise<SyntheticData> {
-  const client = makeClient();
-  const ready = await detectProvenance(client);
-  if (!ready) return { ready: false, rows: [], batches: [] };
-
-  const { data, error } = await client
-    .from("survey_submissions")
-    .select("id, created_at, schema_version, synthetic_batch_id")
-    .eq(SYNTHETIC_COLUMN, true)
-    .order("created_at", { ascending: false })
-    .limit(MAX_ROWS);
-
-  if (error) {
-    throw new AdminDataError("Could not load synthetic test rows.");
-  }
-
-  const rows: SyntheticRow[] = (data ?? []).map((row) => ({
-    id: String(row.id),
-    createdAt: String(row.created_at ?? ""),
-    schemaVersion: String(row.schema_version ?? "unknown"),
-    batchId:
-      row.synthetic_batch_id === null || row.synthetic_batch_id === undefined
-        ? null
-        : String(row.synthetic_batch_id),
-  }));
-
-  const batchMap = new Map<
-    string,
-    { batchId: string | null; count: number; earliestAt: string | null; latestAt: string | null }
-  >();
-  for (const row of rows) {
-    const key = row.batchId ?? "__unbatched__";
-    const entry =
-      batchMap.get(key) ??
-      { batchId: row.batchId, count: 0, earliestAt: null, latestAt: null };
-    entry.count += 1;
-    const ts = Date.parse(row.createdAt);
-    if (!Number.isNaN(ts)) {
-      if (!entry.earliestAt || ts < Date.parse(entry.earliestAt)) {
-        entry.earliestAt = row.createdAt;
-      }
-      if (!entry.latestAt || ts > Date.parse(entry.latestAt)) {
-        entry.latestAt = row.createdAt;
-      }
-    }
-    batchMap.set(key, entry);
-  }
-
-  return {
-    ready: true,
-    rows,
-    batches: [...batchMap.values()].sort((a, b) => b.count - a.count),
-  };
 }
 
 export type ProgrammeCount = {
@@ -211,12 +93,6 @@ export type ProgrammeCount = {
 
 export type Overview = {
   total: number;
-  /** Genuine submissions only (total minus synthetic). */
-  genuine: number;
-  /** Synthetic test rows included in the dataset. */
-  synthetic: number;
-  /** Synthetic share of the whole dataset, as a percentage. */
-  syntheticSharePct: number;
   loaded: number;
   truncated: boolean;
   latestAt: string | null;
@@ -289,37 +165,14 @@ export function computeProgrammeCounts(rows: AnalysisRow[]): {
 
 export async function getOverview(rows: AnalysisRow[]): Promise<Overview> {
   const client = makeClient();
-  const ready = await detectProvenance(client);
 
-  const countRows = async (synthetic?: boolean): Promise<number> => {
-    let query = client
-      .from("survey_submissions")
-      .select("id", { count: "exact", head: true });
-    if (synthetic !== undefined) {
-      query = query.eq(SYNTHETIC_COLUMN, synthetic);
-    }
-    const { count, error } = await query;
-    if (error) {
-      throw new AdminDataError("Could not count survey responses.");
-    }
-    return count ?? 0;
-  };
-
-  let total: number;
-  let genuine: number;
-  let synthetic: number;
-  if (ready) {
-    [total, genuine, synthetic] = await Promise.all([
-      countRows(),
-      countRows(false),
-      countRows(true),
-    ]);
-  } else {
-    // No provenance columns: every stored row is genuine by construction.
-    genuine = await countRows();
-    total = genuine;
-    synthetic = 0;
+  const { count, error } = await client
+    .from("survey_submissions")
+    .select("id", { count: "exact", head: true });
+  if (error) {
+    throw new AdminDataError("Could not count survey responses.");
   }
+  let total = count ?? 0;
   if (total === 0) total = rows.length;
 
   const { programmes, suppressedGroups, withProgramme } =
@@ -338,9 +191,6 @@ export async function getOverview(rows: AnalysisRow[]): Promise<Overview> {
 
   return {
     total,
-    genuine,
-    synthetic,
-    syntheticSharePct: total ? (synthetic / total) * 100 : 0,
     loaded: rows.length,
     truncated: total > rows.length,
     latestAt: withTimestamps.at(-1)?.row.created_at ?? null,
@@ -364,8 +214,6 @@ export type ResponseSummary = {
   programme: string | null;
   hasName: boolean;
   hasPhone: boolean;
-  isSynthetic: boolean;
-  syntheticBatchId: string | null;
 };
 
 function toSummary(row: {
@@ -373,8 +221,6 @@ function toSummary(row: {
   created_at: unknown;
   schema_version: unknown;
   answers: unknown;
-  is_synthetic?: unknown;
-  synthetic_batch_id?: unknown;
 }): ResponseSummary {
   const answers = (row.answers ?? {}) as Record<string, unknown>;
   const programme =
@@ -390,11 +236,6 @@ function toSummary(row: {
     hasPhone:
       typeof answers.profile_phone === "string" &&
       answers.profile_phone.length > 0,
-    isSynthetic: row.is_synthetic === true,
-    syntheticBatchId:
-      row.synthetic_batch_id === null || row.synthetic_batch_id === undefined
-        ? null
-        : String(row.synthetic_batch_id),
   };
 }
 
@@ -429,8 +270,6 @@ export type ResponseDetail = {
   createdAt: string;
   schemaVersion: string;
   answers: Record<string, unknown>;
-  isSynthetic: boolean;
-  syntheticBatchId: string | null;
 };
 
 export async function getResponseById(
@@ -453,11 +292,5 @@ export async function getResponseById(
     createdAt: String(data.created_at ?? ""),
     schemaVersion: String(data.schema_version ?? "unknown"),
     answers: (data.answers ?? {}) as Record<string, unknown>,
-    isSynthetic: data[SYNTHETIC_COLUMN] === true,
-    syntheticBatchId:
-      data[SYNTHETIC_BATCH_COLUMN] === null ||
-      data[SYNTHETIC_BATCH_COLUMN] === undefined
-        ? null
-        : String(data[SYNTHETIC_BATCH_COLUMN]),
   };
 }

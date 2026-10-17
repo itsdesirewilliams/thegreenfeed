@@ -20,7 +20,6 @@ const PROTECTED_PAGES = [
   "/admin/analysis",
   "/admin/questions",
   "/admin/exports",
-  "/admin/testing",
 ];
 
 const PROTECTED_EXPORTS = ["/admin/exports/raw", "/admin/exports/aggregate"];

@@ -39,7 +39,7 @@ export default async function AdminResponsesPage(props: {
     <div className="flex flex-col gap-6">
       <AdminPageHeader
         title="Responses"
-        description="Paginated list of genuine submissions and labelled synthetic test rows. Identifying details (name, phone) are shown only inside the protected detail view."
+        description="Paginated list of survey submissions. Identifying details (name, phone) are shown only inside the protected detail view."
         actions={
           <span className="text-sm text-muted-ink">
             {total} response{total === 1 ? "" : "s"}
@@ -94,11 +94,6 @@ export default async function AdminResponsesPage(props: {
                     </td>
                     <td className="py-2 pr-3">
                       <Badge variant="secondary">{row.schemaVersion}</Badge>
-                      {row.isSynthetic ? (
-                        <Badge variant="destructive" className="ml-2">
-                          Synthetic
-                        </Badge>
-                      ) : null}
                     </td>
                     <td className="py-2">
                       <Link
