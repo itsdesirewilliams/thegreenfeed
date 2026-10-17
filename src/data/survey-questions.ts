@@ -45,7 +45,7 @@ export {
   SYNTHETIC_COLUMN,
   SYNTHETIC_BATCH_COLUMN,
   SYNTHETIC_LABEL,
-  SYNTHETIC_EXCLUDED_NOTE,
+  SYNTHETIC_INCLUDED_NOTE,
 } from "./survey/provenance";
 
 export {

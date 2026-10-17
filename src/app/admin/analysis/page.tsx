@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
-import { AdminPageHeader, Panel, VersionNotice } from "@/components/admin/bits";
+import { AdminPageHeader, Panel, ProvenanceNotice, VersionNotice } from "@/components/admin/bits";
 import { ErrorPanel } from "@/components/admin/error-panel";
 import { requireAdmin } from "@/lib/admin/auth";
 import { fetchAllRows } from "@/lib/admin/data";
@@ -47,6 +47,12 @@ export default async function AdminAnalysisPage() {
         unsupportedWarning={dataQuality.unsupportedWarning}
       />
 
+      <ProvenanceNotice
+        genuine={dataQuality.genuineResponses}
+        synthetic={dataQuality.syntheticResponses}
+        sharePct={dataQuality.syntheticSharePct}
+      />
+
       {dataQuality.sampleWarning ? (
         <p className="rounded-lg bg-secondary px-4 py-3 text-sm text-forest">
           {dataQuality.sampleWarning}
@@ -62,6 +68,23 @@ export default async function AdminAnalysisPage() {
             <dt className="text-xs text-muted-ink uppercase">Total responses</dt>
             <dd className="text-lg font-semibold text-forest">
               {dataQuality.totalResponses}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-ink uppercase">Genuine responses</dt>
+            <dd className="text-lg font-semibold text-forest">
+              {dataQuality.genuineResponses}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-ink uppercase">
+              Synthetic responses
+            </dt>
+            <dd className="text-lg font-semibold text-forest">
+              {dataQuality.syntheticResponses}
+              <span className="ml-1 text-xs font-normal text-muted-ink">
+                ({Math.round(dataQuality.syntheticSharePct)}%)
+              </span>
             </dd>
           </div>
           <div>

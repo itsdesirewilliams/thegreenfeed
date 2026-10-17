@@ -112,6 +112,43 @@ export function VersionNotice({
   );
 }
 
+/**
+ * Provenance banner. Makes the genuine/synthetic split explicit on every view
+ * that aggregates responses, so synthetic test rows are never mistaken for real
+ * participants.
+ */
+export function ProvenanceNotice({
+  genuine,
+  synthetic,
+  sharePct,
+}: {
+  genuine: number;
+  synthetic: number;
+  sharePct: number;
+}) {
+  if (synthetic === 0) {
+    return (
+      <p className="rounded-lg bg-secondary px-4 py-3 text-sm text-forest">
+        All {genuine} stored response(s) are genuine submissions. No synthetic
+        test rows are present.
+      </p>
+    );
+  }
+  return (
+    <p
+      role="status"
+      className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200"
+    >
+      This dataset combines <strong>{genuine}</strong> genuine response(s) with{" "}
+      <strong>{synthetic}</strong> synthetic test row(s) (
+      {Math.round(sharePct)}% of the dataset). Synthetic rows are{" "}
+      <strong>not real participants</strong>; they are included so the analysis
+      and exports can be exercised, and they are labelled by provenance wherever
+      they appear.
+    </p>
+  );
+}
+
 export type BarItem = {
   label: string;
   count: number;

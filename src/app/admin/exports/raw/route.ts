@@ -10,9 +10,12 @@ import {
 /**
  * Raw response export (admin only, sensitive).
  *
- * Contains identifying data (name, phone) and every stored answer. Every request
- * is re-authorised server-side; the file is generated on the server and streamed
- * only to an authenticated admin.
+ * Contains identifying data (name, phone) and every stored answer, for genuine
+ * and synthetic rows alike. Provenance is exported explicitly (`is_synthetic`,
+ * `synthetic_batch_id`) so synthetic rows are always identifiable and never
+ * mistaken for real participants. Every request is re-authorised server-side;
+ * the file is generated on the server and streamed only to an authenticated
+ * admin.
  */
 
 export async function GET() {
@@ -45,6 +48,8 @@ export async function GET() {
     "id",
     "created_at",
     "schema_version",
+    "is_synthetic",
+    "synthetic_batch_id",
     "profile_full_name",
     "profile_programme",
     "profile_phone",
@@ -56,6 +61,8 @@ export async function GET() {
     row.id,
     toIsoUtc(row.created_at),
     row.schema_version,
+    row.is_synthetic === true ? "true" : "false",
+    row.synthetic_batch_id ?? "",
     typeof row.answers.profile_full_name === "string"
       ? row.answers.profile_full_name
       : "",

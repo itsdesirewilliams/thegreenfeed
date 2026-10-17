@@ -9,7 +9,7 @@ import { requireAdmin } from "@/lib/admin/auth";
 import { fetchSyntheticRows } from "@/lib/admin/data";
 import { load } from "@/lib/admin/load";
 import { formatDateTime } from "@/lib/admin/format";
-import { SYNTHETIC_EXCLUDED_NOTE, SYNTHETIC_LABEL } from "@/data/survey-questions";
+import { SYNTHETIC_INCLUDED_NOTE, SYNTHETIC_LABEL } from "@/data/survey-questions";
 
 export const instant = false;
 
@@ -30,14 +30,14 @@ export default async function AdminTestingPage() {
     <div className="flex flex-col gap-6">
       <AdminPageHeader
         title="Testing data"
-        description="Synthetic rows used only to exercise the analysis and admin views."
+        description="Synthetic rows included in the analysis and exports to exercise those views — always labelled as test data."
       />
 
       <Alert variant="destructive">
         <FlaskConical />
         <AlertTitle>{SYNTHETIC_LABEL} — not research findings</AlertTitle>
         <AlertDescription>
-          These rows are generated for testing. {SYNTHETIC_EXCLUDED_NOTE} They
+          These rows are generated for testing. {SYNTHETIC_INCLUDED_NOTE} They
           must never be presented as real responses.
         </AlertDescription>
       </Alert>
@@ -118,7 +118,7 @@ export default async function AdminTestingPage() {
             )}
           </Panel>
 
-          <Panel title="Rows" description="Newest first. Not included in any research export.">
+          <Panel title="Rows" description="Newest first. Also listed in Responses and counted in Analysis and the exports, labelled as synthetic.">
             {rows.length === 0 ? (
               <p className="text-sm text-muted-ink">No synthetic rows.</p>
             ) : (
@@ -168,6 +168,18 @@ export default async function AdminTestingPage() {
               </div>
             )}
           </Panel>
+
+          <p className="text-sm text-muted-ink">
+            See{" "}
+            <Link className="text-forest underline" href="/admin/analysis">
+              Analysis
+            </Link>{" "}
+            and{" "}
+            <Link className="text-forest underline" href="/admin/exports">
+              Exports
+            </Link>{" "}
+            to confirm synthetic rows are included and labelled by provenance.
+          </p>
         </>
       )}
     </div>

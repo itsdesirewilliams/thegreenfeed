@@ -7,14 +7,17 @@ import {
 } from "@/lib/admin/data";
 import { toCsv, withBom, type CsvCell } from "@/lib/admin/csv";
 import { toIsoUtc } from "@/lib/admin/format";
-import { SYNTHETIC_EXCLUDED_NOTE } from "@/data/survey-questions";
+import { SYNTHETIC_INCLUDED_NOTE } from "@/data/survey-questions";
 import { buildAnalysis } from "@/lib/analysis";
 
 /**
  * Aggregate analysis export (admin only).
  *
  * Contains counts, percentages, patterns and recommendations. Names, phone
- * numbers and raw per-respondent rows are excluded by construction.
+ * numbers and raw per-respondent rows are excluded by construction. Genuine and
+ * synthetic rows are aggregated together but reported separately
+ * (`genuine_responses`, `synthetic_responses`, batch ids) so synthetic data is
+ * never presented as real participants.
  */
 
 export async function GET() {
@@ -40,6 +43,18 @@ export async function GET() {
   lines.push(["TheGreenFeed aggregate analysis"]);
   lines.push(["generated_at", generatedAt]);
   lines.push(["total_responses", analysis.dataQuality.totalResponses]);
+  lines.push(["genuine_responses", analysis.dataQuality.genuineResponses]);
+  lines.push(["synthetic_responses", analysis.dataQuality.syntheticResponses]);
+  lines.push([
+    "synthetic_share_pct",
+    analysis.dataQuality.syntheticSharePct.toFixed(1),
+  ]);
+  lines.push([
+    "synthetic_batches",
+    analysis.dataQuality.syntheticBatches
+      .map((batch) => `${batch.batchId ?? "(unbatched)"} (${batch.count})`)
+      .join("; "),
+  ]);
   lines.push(["analysed_responses", analysis.dataQuality.analysedResponses]);
   lines.push([
     "instrument_versions",
@@ -59,8 +74,10 @@ export async function GET() {
       .join("; "),
   ]);
   lines.push([
-    "synthetic_rows",
-    `excluded — ${SYNTHETIC_EXCLUDED_NOTE}`,
+    "synthetic_provenance",
+    analysis.dataQuality.includesSynthetic
+      ? SYNTHETIC_INCLUDED_NOTE
+      : "No synthetic rows are present; every row is a genuine submission.",
   ]);
   lines.push(["period_start", toIsoUtc(analysis.dataQuality.periodStart)]);
   lines.push(["period_end", toIsoUtc(analysis.dataQuality.periodEnd)]);

@@ -338,7 +338,7 @@ async function main() {
   }
 
   console.log(
-    `Inserted ${inserted} synthetic row(s) in batch "${batchId}". They are excluded from all research analysis and exports.`,
+    `Inserted ${inserted} synthetic row(s) in batch "${batchId}". They are included in the admin analysis and exports, always labelled by provenance (is_synthetic / synthetic_batch_id) so they cannot be presented as genuine responses.`,
   );
 }
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AdminPageHeader, Bars, Panel, Stat, VersionNotice } from "@/components/admin/bits";
+import { AdminPageHeader, Bars, Panel, ProvenanceNotice, Stat, VersionNotice } from "@/components/admin/bits";
 import { ErrorPanel } from "@/components/admin/error-panel";
 import { requireAdmin } from "@/lib/admin/auth";
 import { fetchAllRows, getOverview } from "@/lib/admin/data";
@@ -35,13 +35,19 @@ export default async function AdminOverviewPage() {
     <div className="flex flex-col gap-6">
       <AdminPageHeader
         title="Overview"
-        description="Real submissions only. No records are fabricated, edited or deleted from here."
+        description="Genuine submissions and labelled synthetic test rows. No records are fabricated, edited or deleted from here."
       />
 
       <VersionNotice
         analysedVersion={analysis.dataQuality.analysedVersion}
         excludedVersions={analysis.dataQuality.excludedVersions}
         unsupportedWarning={analysis.dataQuality.unsupportedWarning}
+      />
+
+      <ProvenanceNotice
+        genuine={overview.genuine}
+        synthetic={overview.synthetic}
+        sharePct={overview.syntheticSharePct}
       />
 
       {overview.truncated ? (
@@ -67,6 +73,12 @@ export default async function AdminOverviewPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Total responses" value={overview.total} />
+        <Stat label="Genuine responses" value={overview.genuine} />
+        <Stat
+          label="Synthetic responses"
+          value={overview.synthetic}
+          hint={overview.synthetic ? `${Math.round(overview.syntheticSharePct)}% of dataset` : undefined}
+        />
         <Stat
           label="Latest submission"
           value={

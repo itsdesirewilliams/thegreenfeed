@@ -12,6 +12,7 @@
     "verify:survey": "node scripts/verify-survey-wording.mjs",
     "verify:survey-consistency": "node scripts/verify-survey-consistency.mjs",
     "verify:survey-db": "node scripts/verify-survey-db.mjs",
+    "verify:analysis-provenance": "node scripts/verify-analysis-provenance.mjs",
     "docs:questionnaire": "node scripts/generate-questionnaire-doc.mjs"
   },
   "dependencies": {

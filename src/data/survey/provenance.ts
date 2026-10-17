@@ -13,9 +13,13 @@
  * only writer allowed to set them is the authorised import script
  * (`scripts/import-synthetic.mjs`) using the server-only secret key.
  *
- * Research analysis, aggregate exports and public findings read genuine rows
- * only (see `fetchAllRows` in `src/lib/admin/data.ts`); synthetic rows are shown
- * exclusively in the labelled admin testing view.
+ * Synthetic rows ARE included in the overview, question distributions, analysis
+ * and both research exports (see `fetchAllRows` in `src/lib/admin/data.ts`), so
+ * the combined dataset can be exercised end to end. They stay distinguishable:
+ * every admin view and export labels provenance, and the aggregate export
+ * reports genuine vs synthetic counts so synthetic rows are never presented as
+ * real participants. The labelled admin testing view remains the place to
+ * inspect and remove a synthetic batch.
  */
 
 export const SYNTHETIC_COLUMN = "is_synthetic";
@@ -24,5 +28,5 @@ export const SYNTHETIC_BATCH_COLUMN = "synthetic_batch_id";
 /** Human-facing label used wherever synthetic data is shown. */
 export const SYNTHETIC_LABEL = "Synthetic test data";
 
-export const SYNTHETIC_EXCLUDED_NOTE =
-  "Synthetic test rows are excluded from the overview, question distributions, analysis, and both aggregate and raw research exports.";
+export const SYNTHETIC_INCLUDED_NOTE =
+  "Synthetic test rows are included in the overview, question distributions, analysis, and both aggregate and raw research exports, and are labelled by provenance so they can be told apart from genuine submissions.";
