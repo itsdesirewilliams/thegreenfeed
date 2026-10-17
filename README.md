@@ -271,16 +271,25 @@ It is **separate from the public site** and does not change the live survey.
   (groups smaller than 5 are combined so individuals cannot be re-identified).
 - **Questions** (`/admin/questions`) — per-question counts, percentages, valid N
   and missing N, with the permitted interpretation for each option.
-- **Analysis** (`/admin/analysis`) — the rule-based findings: dominance,
-  cross-question patterns, recommendations, and the method/thresholds/limitations
-  used to reach them. Descriptive only — never a single "score" and no causal
-  claims.
-- **Responses** (`/admin/responses`) — a paginated list. Identifying details
-  (name, phone, programme) appear only inside the protected detail view.
-- **Exports** (`/admin/exports`) — on-demand CSV downloads generated server-side:
-  an **aggregate** file (no names/phones) and a **raw** file (every row,
-  including identifying data). Files are UTF-8 CSV with a BOM so Excel opens them
-  correctly; there is no in-browser spreadsheet library.
+- **Responses** (`/admin/responses`) — a paginated list showing each respondent's
+  name and programme; phone numbers appear only inside the protected detail view.
+  "Download Responses" saves a teacher-ready Excel workbook of every row.
+- **Analysis** (`/admin/analysis`) — reachable from the response count, not the
+  main navigation. The sample summary leads; the rule-based findings
+  (cross-question patterns, recommendations, synthesis, method/thresholds and
+  limitations) sit in a collapsed "Advanced analysis" section. Descriptive only —
+  never a single "score" and no causal claims. "Download Analysis" saves the
+  analysis workbook.
+- **Downloads** — generated on the server as Excel (`.xlsx`) workbooks, opened
+  directly in Excel, Numbers or Google Sheets:
+  - a **teacher-ready raw-responses workbook** (every row, with profile fields,
+    consent and each answer already mapped to its readable option label; includes
+    identifying data), and
+  - a three-sheet **analysis workbook** (Summary, Question Results, Advanced
+    Analysis) with no names, phone numbers or per-respondent rows.
+
+  There is no in-browser spreadsheet library; `exceljs` runs server-side only and
+  is excluded from the server bundle via `serverExternalPackages`.
 
 Nothing in the admin area creates, edits or deletes rows. Every view re-authorises
 the request server-side, and an edge guard (`src/proxy.ts`) rejects unauthenticated
@@ -329,8 +338,8 @@ no access.
   project's data-protection rules.
 - There is no multi-user accounts, no audit log, and no password reset. If the
   password is lost, generate a new hash and update the environment variable.
-- The aggregate export never includes names, phone numbers or per-respondent
-  rows; the raw export does, by design.
+- The analysis export never includes names, phone numbers or per-respondent
+  rows; the raw-responses export does, by design.
 
 ## Project structure
 
@@ -338,8 +347,8 @@ no access.
 src/
   proxy.ts                 edge guard: authenticates /admin before any render
   app/                     routes, layout, global styles
-    admin/                 server-rendered admin panel (login, overview, analysis, …)
-    admin/exports/         CSV export route handlers (raw, aggregate)
+    admin/                 server-rendered admin panel (login, overview, responses, …)
+    admin/exports/         Excel export route handlers (raw, analysis)
   components/
     site/                  header, footer, navigation, section wrappers
     home/                  homepage sections and carousel
@@ -358,7 +367,7 @@ src/
     fonts.ts               Instrument Serif + Manrope (next/font/google)
     site.ts                site constants and navigation
     analysis.ts            deterministic rule-based analysis engine
-    admin/                 server-only auth, session crypto, data access, CSV, formatting
+    admin/                 server-only auth, session crypto, data access, Excel, formatting
     supabase/              browser/server Supabase helpers
 public/images/
   campaign/                supplied GreenFeed flyers
@@ -366,7 +375,7 @@ public/images/
   about/                   Hannah's supplied portrait
 supabase/migrations/       SQL migrations (table + schema_version default)
 scripts/                   hash-admin-password.mjs, verify-survey-*.mjs,
-                           generate-questionnaire-doc.mjs
+                           verify-exports.ts, generate-questionnaire-doc.mjs
 docs/ASSETS.md             asset inventory
 docs/survey-redesign.md    v4 instrument and codebook (implemented)
 docs/survey-questionnaire-v4.md   final questionnaire report (generated)

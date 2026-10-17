@@ -211,6 +211,7 @@ export type ResponseSummary = {
   id: string;
   createdAt: string;
   schemaVersion: string;
+  name: string | null;
   programme: string | null;
   hasName: boolean;
   hasPhone: boolean;
@@ -225,14 +226,18 @@ function toSummary(row: {
   const answers = (row.answers ?? {}) as Record<string, unknown>;
   const programme =
     typeof answers.profile_programme === "string" ? answers.profile_programme : null;
+  const name =
+    typeof answers.profile_full_name === "string" &&
+    answers.profile_full_name.length > 0
+      ? answers.profile_full_name
+      : null;
   return {
     id: String(row.id),
     createdAt: String(row.created_at ?? ""),
     schemaVersion: String(row.schema_version ?? "unknown"),
+    name,
     programme,
-    hasName:
-      typeof answers.profile_full_name === "string" &&
-      answers.profile_full_name.length > 0,
+    hasName: name !== null,
     hasPhone:
       typeof answers.profile_phone === "string" &&
       answers.profile_phone.length > 0,

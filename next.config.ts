@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  // exceljs uses Node built-ins; keep it out of the server bundle and load it
+  // natively (it is only reached from the admin export route handlers).
+  serverExternalPackages: ["exceljs"],
   async headers() {
     return [
       {

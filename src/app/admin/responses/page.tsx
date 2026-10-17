@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { AdminPageHeader, Panel } from "@/components/admin/bits";
 import { ErrorPanel } from "@/components/admin/error-panel";
 import { requireAdmin } from "@/lib/admin/auth";
 import { listResponses, programmeLabel } from "@/lib/admin/data";
 import { load } from "@/lib/admin/load";
 import { formatDateTime } from "@/lib/admin/format";
+import { cn } from "@/lib/utils";
 
 export const instant = false;
 
@@ -39,11 +42,23 @@ export default async function AdminResponsesPage(props: {
     <div className="flex flex-col gap-6">
       <AdminPageHeader
         title="Responses"
-        description="Paginated list of survey submissions. Identifying details (name, phone) are shown only inside the protected detail view."
+        description="Paginated list of survey submissions. Names are shown here; phone numbers appear only inside the protected detail view."
         actions={
-          <span className="text-sm text-muted-ink">
-            {total} response{total === 1 ? "" : "s"}
-          </span>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin/analysis"
+              className="text-sm text-muted-ink underline underline-offset-4 hover:text-forest"
+            >
+              {total} response{total === 1 ? "" : "s"}
+            </Link>
+            <a
+              href="/admin/exports/raw"
+              className={cn(buttonVariants({ variant: "default" }))}
+            >
+              <Download />
+              Download Responses
+            </a>
+          </div>
         }
       />
 
@@ -62,13 +77,10 @@ export default async function AdminResponsesPage(props: {
                     Submitted
                   </th>
                   <th scope="col" className="py-2 pr-3 font-medium">
-                    Response ID
+                    Name
                   </th>
                   <th scope="col" className="py-2 pr-3 font-medium">
                     Programme / course
-                  </th>
-                  <th scope="col" className="py-2 pr-3 font-medium">
-                    Version
                   </th>
                   <th scope="col" className="py-2 font-medium">
                     Detail
@@ -81,19 +93,13 @@ export default async function AdminResponsesPage(props: {
                     <td className="py-2 pr-3 whitespace-nowrap">
                       {formatDateTime(row.createdAt)}
                     </td>
-                    <td className="py-2 pr-3 font-mono text-xs text-muted-ink">
-                      {row.id.slice(0, 8)}…
-                    </td>
                     <td className="py-2 pr-3">
-                      {row.programme ? programmeLabel(row.programme) : "—"}
-                      {row.hasName ? null : (
-                        <Badge variant="outline" className="ml-2">
-                          No name
-                        </Badge>
+                      {row.name ?? (
+                        <Badge variant="outline">No name</Badge>
                       )}
                     </td>
                     <td className="py-2 pr-3">
-                      <Badge variant="secondary">{row.schemaVersion}</Badge>
+                      {row.programme ? programmeLabel(row.programme) : "—"}
                     </td>
                     <td className="py-2">
                       <Link
